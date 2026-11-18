@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Db } from "@/lib/supabase/server";
 import { ServiceError, fromDb } from "./errors";
+import { createInfluencer, findByHandle, normalizeHandle } from "./influencers";
 
 /** Campaign services. Money is calculated from deals (campaign_financials_thunder view). */
 
@@ -183,4 +184,69 @@ export async function campaignInfluencerIds(db: Db, workspaceId: string, campaig
     .eq("workspace_id", workspaceId).eq("campaign_id", campaignId).is("deleted_at", null);
   fromDb(error, "Loading campaign influencers");
   return new Set((data ?? []).map((d) => d.influencer_id as string));
+}
+
+// ── Quick add: new (or existing) influencer straight into a campaign ──
+export const quickAddInput = z.object({
+  handle: z.string().min(1, "Instagram handle is required"),
+  name: z.string().trim().max(120).optional(),
+  followers: z.string().optional(),
+  city: z.string().trim().max(80).optional(),
+  phone: z.string().trim().max(40).optional(),
+  niche_tags: z.string().optional(),
+  client_price: z.string().optional(),
+  payout: z.string().optional(),
+});
+
+export type QuickAddResult = { dealId: string; influencerName: string; handle: string; created: boolean; alreadyInCampaign: boolean };
+
+/**
+ * One step from inside a campaign: find the influencer by handle (or create a minimal profile),
+ * then add them to the campaign as Shortlisted, optionally with this campaign's price and payout.
+ */
+export async function quickAddToCampaign(db: Db, workspaceId: string, userId: string, campaignId: string, input: unknown): Promise<QuickAddResult> {
+  const p = quickAddInput.safeParse(input);
+  if (!p.success) throw new ServiceError(p.error.issues[0].message, "validation");
+  const v = p.data;
+  const handle = normalizeHandle(v.handle);
+  if (!/^[a-z0-9._]{1,30}$/.test(handle)) throw new ServiceError("Enter a valid Instagram handle or profile link.", "validation");
+
+  const money = (s?: string) => {
+    const t = (s ?? "").replace(/[₹, ]/g, "");
+    if (!t) return null;
+    const n = Number(t);
+    if (!Number.isFinite(n) || n < 0) throw new ServiceError("Prices must be positive numbers.", "validation");
+    return n;
+  };
+  const clientPrice = money(v.client_price);
+  const payout = money(v.payout);
+
+  let influencer = await findByHandle(db, workspaceId, handle);
+  let created = false;
+  if (!influencer) {
+    const isPhone = (v.phone ?? "").trim() !== "";
+    const id = await createInfluencer(db, workspaceId, userId, {
+      name: v.name?.trim() || handle,
+      handle,
+      followers: v.followers ?? "",
+      city: v.city ?? "",
+      whatsapp: isPhone ? v.phone : "",
+      phone: isPhone ? v.phone : "",
+      niche_tags: v.niche_tags ?? "",
+    });
+    influencer = { id, name: v.name?.trim() || handle, handle };
+    created = true;
+  }
+
+  const { data: existing, error: e1 } = await db.from("deals_thunder").select("id")
+    .eq("workspace_id", workspaceId).eq("campaign_id", campaignId).eq("influencer_id", influencer.id).is("deleted_at", null).maybeSingle();
+  fromDb(e1, "Checking campaign");
+  if (existing) return { dealId: existing.id, influencerName: influencer.name, handle, created, alreadyInCampaign: true };
+
+  const { data, error } = await db.from("deals_thunder").insert({
+    workspace_id: workspaceId, campaign_id: campaignId, influencer_id: influencer.id,
+    owner_id: userId, created_by: userId, client_price: clientPrice, payout,
+  }).select("id").single();
+  fromDb(error, "Adding to campaign");
+  return { dealId: data!.id as string, influencerName: influencer.name, handle, created, alreadyInCampaign: false };
 }

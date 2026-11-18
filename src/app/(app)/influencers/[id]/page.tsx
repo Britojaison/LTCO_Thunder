@@ -74,11 +74,19 @@ async function Profile({ params }: { params: PageProps<"/influencers/[id]">["par
           <Row label="Engagement rate">{pct(inf.engagement_rate)}</Row>
           <Row label="Followers updated">{dateIN(inf.followers_updated_at ?? inf.updated_at)}</Row>
         </Card>
-        <Card title="Rates">
-          <Row label="Reel">{inr(inf.rate_reel)}</Row>
-          <Row label="Story">{inr(inf.rate_story)}</Row>
-          <Row label="Carousel">{inr(inf.rate_carousel)}</Row>
-          <Row label="Collab post">{inr(inf.rate_collab)}</Row>
+        <Card title="Rates (average of real deals)">
+          {(["reel", "story", "carousel", "collab"] as const).map((f) => {
+            const st = (inf.rate_stats ?? {})[f] as { avg: number; deals: number } | undefined;
+            const v = inf[`rate_${f}` as const];
+            return (
+              <Row key={f} label={f === "collab" ? "Collab post" : cap(f)}>
+                {st ? <>{inr(st.avg)} <span className="text-xs text-zinc-400">avg of {st.deals}</span></> : v !== null ? <>{inr(v)} <span className="text-xs text-zinc-400">quoted</span></> : "–"}
+              </Row>
+            );
+          })}
+          <Row label="Avg payout per deal">
+            {inf.rate_stats?.all ? <>{inr(inf.rate_stats.all.avg_payout)} <span className="text-xs text-zinc-400">{inf.rate_stats.all.deals} deals</span></> : "–"}
+          </Row>
           <Row label="Open to barter">{inf.open_to_barter ? "Yes" : "No"}</Row>
           <Row label="GST registered">{inf.gst_registered === null ? "Unknown" : inf.gst_registered ? "Yes" : "No"}</Row>
         </Card>

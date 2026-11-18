@@ -10,6 +10,8 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { MoneyCards } from "@/components/money";
 import { cap, compact, dateIN, inr } from "@/lib/format";
 import { StatusBadge } from "../status-badge";
+import { CampaignTabs } from "../campaign-tabs";
+import { QuickAdd } from "../quick-add";
 import { deleteCampaignAction, setStatusAction } from "../actions";
 
 export const metadata = { title: "Campaign" };
@@ -59,6 +61,9 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
         </div>
       </div>
 
+      <CampaignTabs id={id} active="overview" />
+      <QuickAdd campaignId={id} defaultOpen={ov.deals.length === 0} />
+
       <MoneyCards fin={ov.fin} />
 
       <Card title="Influencers by stage">
@@ -88,19 +93,27 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
                   {ov.deals.map((d) => (
                     <tr key={d.id} className={`border-t border-zinc-100 ${d.dropped ? "text-zinc-400 line-through" : ""}`}>
                       <td className="py-1.5">
-                        {d.influencer ? <Link href={`/influencers/${d.influencer.id}`} className="hover:underline">{d.influencer.name}</Link> : "–"}
+                        <Link href={`/campaigns/${id}/deals/${d.id}`} className="font-medium text-blue-700 underline decoration-blue-200 underline-offset-2 hover:decoration-blue-700">{d.influencer?.name ?? "–"}</Link>
                         <span className="ml-1 text-xs text-zinc-400">{d.influencer ? `@${d.influencer.handle} · ${compact(d.influencer.followers)}` : ""}</span>
                       </td>
                       <td>{d.stage}</td>
-                      <td className="text-right tabular-nums">{inr(d.client_price)}</td>
-                      <td className="text-right tabular-nums">{inr(d.payout)}</td>
+                      {d.client_price === null && d.payout === null ? (
+                        <td colSpan={2} className="text-right">
+                          <Link href={`/campaigns/${id}/deals/${d.id}`} className="text-xs font-medium text-blue-700 hover:underline">Set price →</Link>
+                        </td>
+                      ) : (
+                        <>
+                          <td className="text-right tabular-nums">{inr(d.client_price)}</td>
+                          <td className="text-right tabular-nums">{inr(d.payout)}</td>
+                        </>
+                      )}
                       <td className="text-right tabular-nums">{inr(d.margin)}</td>
                       <td className="text-right tabular-nums">{d.margin_pct === null ? "–" : `${d.margin_pct}%`}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="mt-2 text-xs text-zinc-400">Prices and payouts are set per influencer in the pipeline (next module).</p>
+              <p className="mt-2 text-xs text-zinc-400">Click an influencer’s name to open their deal: price, payout, contract, contact log and payment. Use the Pipeline tab to move them through stages.</p>
             </div>
           )}
         </Card>

@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { requireWorkspace } from "@/lib/auth";
 import { formToDefaults, formToObject } from "@/lib/form";
 import { ServiceError } from "@/lib/services/errors";
-import { createCampaign, updateCampaign, setCampaignStatus, deleteCampaign, addInfluencersToCampaign } from "@/lib/services/campaigns";
+import { createCampaign, updateCampaign, setCampaignStatus, deleteCampaign, addInfluencersToCampaign, quickAddToCampaign } from "@/lib/services/campaigns";
 
 export type FormState = { error?: string; values?: Record<string, string | string[]> };
 const message = (e: unknown) => (e instanceof ServiceError ? e.message : "Something went wrong. Please try again.");
@@ -55,5 +55,18 @@ export async function addToThisCampaignAction(campaignId: string, influencerIds:
     return { ok: `Added ${added} as Shortlisted${skipped ? ` (${skipped} already in the campaign)` : ""}.` };
   } catch (e) {
     return { error: message(e) };
+  }
+}
+
+export type QuickAddState = { error?: string; result?: import("@/lib/services/campaigns").QuickAddResult; values?: Record<string, string | string[]> };
+
+export async function quickAddAction(campaignId: string, _: QuickAddState, form: FormData): Promise<QuickAddState> {
+  const { db, workspace, user } = await requireWorkspace();
+  try {
+    const result = await quickAddToCampaign(db, workspace.id, user.id, campaignId, formToObject(form));
+    refresh();
+    return { result };
+  } catch (e) {
+    return { error: message(e), values: formToDefaults(form) };
   }
 }

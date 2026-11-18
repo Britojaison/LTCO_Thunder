@@ -99,8 +99,9 @@ export function InfluencerForm({
       </Card>
 
       <Card title="Commercial">
+        <p className="-mt-1 mb-3 text-xs text-zinc-500">Quoted rates. Once this influencer has deals with you, the profile shows the average of what they were actually paid instead.</p>
         <div className="grid gap-3 sm:grid-cols-4">
-          <Field label="Reel ₹"><input name="rate_reel" inputMode="numeric" defaultValue={s("rate_reel")} className={inputCls} /></Field>
+          <Field label="Reel ₹ (quoted)"><input name="rate_reel" inputMode="numeric" defaultValue={s("rate_reel")} className={inputCls} /></Field>
           <Field label="Story ₹"><input name="rate_story" inputMode="numeric" defaultValue={s("rate_story")} className={inputCls} /></Field>
           <Field label="Carousel ₹"><input name="rate_carousel" inputMode="numeric" defaultValue={s("rate_carousel")} className={inputCls} /></Field>
           <Field label="Collab post ₹"><input name="rate_collab" inputMode="numeric" defaultValue={s("rate_collab")} className={inputCls} /></Field>

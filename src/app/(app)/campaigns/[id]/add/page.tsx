@@ -9,6 +9,7 @@ import { workspaceVocab } from "@/lib/services/lists";
 import { ServiceError } from "@/lib/services/errors";
 import { btnPrimary, btnSecondary, Card, Field, inputCls } from "@/components/ui";
 import { CampaignPicker } from "./picker";
+import { QuickAdd } from "../../quick-add";
 
 export const metadata = { title: "Add influencers" };
 
@@ -57,6 +58,8 @@ async function Picker({ params, searchParams }: { params: PageProps<"/campaigns/
         <p className="text-sm text-zinc-500">{inCampaign.size} already in this campaign. New additions start as Shortlisted.</p>
       </div>
 
+      <QuickAdd campaignId={id} defaultOpen={rows.length === 0} defaultHandle={rows.length === 0 && base.q ? base.q : ""} />
+
       <Card>
         <form action={here} method="get" className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-6">
           <Field label="Name or handle"><input name="q" defaultValue={base.q ?? ""} className={inputCls} /></Field>
@@ -87,11 +90,11 @@ async function Picker({ params, searchParams }: { params: PageProps<"/campaigns/
 
       <p className="text-sm text-zinc-600">
         {total.toLocaleString("en-IN")} {total === 1 ? "match" : "matches"}, best fit first.{" "}
-        <Link href={`/influencers/new`} className="underline">Not in the databank? Add a new influencer</Link>
+        Not in the databank? Use Quick add above.
       </p>
 
       {rows.length === 0 ? (
-        <Card><p className="text-sm text-zinc-600">No influencers match. Clear a filter or include competitor promoters.</p></Card>
+        <Card><p className="text-sm text-zinc-600">No influencers match. Add them with Quick add above, clear a filter, or include competitor promoters.</p></Card>
       ) : (
         <CampaignPicker campaignId={id} rows={rows} inCampaign={[...inCampaign]} />
       )}
