@@ -78,7 +78,7 @@ async function Table({ params, searchParams }: { params: PageProps<"/campaigns/[
                   <td className="p-2 text-zinc-600">{d.deliverables.map((x) => `${x.count} ${x.format}`).join(", ") || "–"}</td>
                   <td className="p-2 text-right tabular-nums">{inr(d.client_price)}</td>
                   <td className="p-2 text-right tabular-nums">{inr(d.payout)}</td>
-                  <td className={`p-2 text-right tabular-nums ${(d.margin ?? 0) < 0 ? "text-red-700" : ""}`}>{inr(d.margin)}</td>
+                  <td className={`p-2 text-right tabular-nums ${(d.margin ?? 0) < 0 ? "text-red-700" : ""}`}>{d.payout === null ? <span className="text-xs text-amber-700">No payout</span> : inr(d.margin)}</td>
                   <td className="p-2 text-right tabular-nums">{d.margin_pct === null ? "–" : `${d.margin_pct}%`}</td>
                   <td className="whitespace-nowrap p-2 text-zinc-600">{dateIN(d.posting_date)}</td>
                   <td className="p-2"><Badge tone={PAY_TONE[d.payment_status as keyof typeof PAY_TONE] ?? "zinc"}>{d.payment_status.replace("_", " ")}</Badge></td>

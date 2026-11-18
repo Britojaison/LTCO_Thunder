@@ -8,3 +8,17 @@
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* Client report: A4 print layout */
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .report-page { break-after: page; }
+  .report-page:last-child { break-after: auto; }
+  .report-doc { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { text-decoration: none; }
+}
+@media screen {
+  .report-sheet .report-page { border-bottom: 1px dashed #e4e4e7; }
+}

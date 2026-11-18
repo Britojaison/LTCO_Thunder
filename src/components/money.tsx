@@ -3,12 +3,13 @@ import { inr } from "@/lib/format";
 
 /** Internal money summary. Never used in client reports. */
 export function MoneyCards({ fin }: { fin: Financials }) {
-  const tone = fin.profit < 0 ? "text-red-700" : "text-emerald-700";
+  const noPayouts = fin.influencer_count > 0 && fin.missing_payout === fin.influencer_count;
+  const tone = noPayouts ? "text-amber-700" : fin.profit < 0 ? "text-red-700" : "text-emerald-700";
   const items = [
     { label: "Cost to client", value: inr(fin.cost_to_client) },
-    { label: "Cost to agency", value: inr(fin.cost_to_agency) },
-    { label: "Profit", value: inr(fin.profit), cls: tone },
-    { label: "Profit %", value: fin.profit_pct === null ? "–" : `${fin.profit_pct}%`, cls: tone },
+    { label: "Cost to agency", value: noPayouts ? "Not entered" : inr(fin.cost_to_agency), cls: noPayouts ? "text-amber-700 text-lg" : "" },
+    { label: fin.missing_payout && !noPayouts ? "Profit (partial)" : "Profit", value: noPayouts ? "Payouts missing" : inr(fin.profit), cls: `${tone} ${noPayouts ? "text-lg" : ""}` },
+    { label: fin.missing_payout && !noPayouts ? "Profit % (partial)" : "Profit %", value: noPayouts ? "–" : fin.profit_pct === null ? "–" : `${fin.profit_pct}%`, cls: tone },
   ];
   return (
     <div>
