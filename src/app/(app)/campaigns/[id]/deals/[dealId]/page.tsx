@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth";
 import { getDeal, listContacts, listMembers, listStages } from "@/lib/services/deals";
+import { listPosts } from "@/lib/services/posts";
 import { signedUrls } from "@/lib/services/storage";
 import { ServiceError } from "@/lib/services/errors";
 import { Card } from "@/components/ui";
@@ -13,6 +14,7 @@ import { DealForm } from "./deal-form";
 import { PaymentForm } from "./payment-form";
 import { FileField } from "./file-field";
 import { ContactForm } from "./contact-form";
+import { PostsSection } from "./posts-section";
 
 export const metadata = { title: "Deal" };
 
@@ -30,12 +32,14 @@ async function Deal({ params }: { params: PageProps<"/campaigns/[id]/deals/[deal
     throw e;
   });
   if (deal.campaign_id !== id) notFound();
-  const [stages, members, contacts, urls] = await Promise.all([
+  const [stages, members, contacts, urls, posts] = await Promise.all([
     listStages(db, workspace.id),
     listMembers(db, workspace.id),
     listContacts(db, workspace.id, dealId),
     signedUrls(db, [deal.contract_path, deal.invoice_path]),
+    listPosts(db, workspace.id, dealId),
   ]);
+  const shotUrls = await signedUrls(db, posts.flatMap((p) => p.snapshots.flatMap((s) => s.screenshot_paths ?? [])));
   const memberName = new Map(members.map((m) => [m.user_id, m.full_name || m.email]));
   const inf = deal.influencer;
 
@@ -67,6 +71,7 @@ async function Deal({ params }: { params: PageProps<"/campaigns/[id]/deals/[deal
             stats={inf.rate_stats ?? {}}
             initial={deal}
           />
+          <PostsSection dealId={dealId} posts={posts} clientPrice={deal.client_price} payout={deal.payout} shotUrls={shotUrls} />
           <Card title="Contract">
             <FileField dealId={dealId} kind="contract" label="Agreement" url={deal.contract_path ? urls[deal.contract_path] : undefined} />
           </Card>
@@ -90,9 +95,7 @@ async function Deal({ params }: { params: PageProps<"/campaigns/[id]/deals/[deal
               <FileField dealId={dealId} kind="invoice" label="Invoice" url={deal.invoice_path ? urls[deal.invoice_path] : undefined} />
             </div>
           </PaymentForm>
-          <Card title="Posts and metrics">
-            <p className="text-sm text-zinc-500">Post links and 24h / 7d / 30d metrics come in the next module.</p>
-          </Card>
+
         </div>
       </div>
     </section>

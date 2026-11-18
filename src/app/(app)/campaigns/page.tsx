@@ -4,6 +4,8 @@ import { requireWorkspace } from "@/lib/auth";
 import { listCampaigns, CAMPAIGN_STATUSES } from "@/lib/services/campaigns";
 import { btnPrimary, Card } from "@/components/ui";
 import { CampaignTable } from "./campaign-table";
+import { listDueSnapshots } from "@/lib/services/posts";
+import { DueSnapshots } from "@/components/due-snapshots";
 
 export const metadata = { title: "Campaigns" };
 
@@ -24,8 +26,12 @@ export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">)
 async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["searchParams"] }) {
   const sp = await searchParams;
   const status = typeof sp.status === "string" ? sp.status : "";
-  const { db, workspace } = await requireWorkspace();
-  const campaigns = await listCampaigns(db, workspace.id, { status });
+  const { db, workspace, user } = await requireWorkspace();
+  const mine = sp.due !== "all";
+  const [campaigns, due] = await Promise.all([
+    listCampaigns(db, workspace.id, { status }),
+    listDueSnapshots(db, workspace.id, mine ? { ownerId: user.id } : {}),
+  ]);
   return (
     <>
       <nav className="flex flex-wrap gap-1">
@@ -42,6 +48,17 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
         <CampaignTable campaigns={campaigns} />
       )}
       <p className="text-xs text-zinc-500">“Active” hides archived campaigns. Money columns are internal and never appear in client reports.</p>
+      <DueSnapshots
+        rows={due}
+        title={mine ? "My snapshots due" : "All snapshots due"}
+        actions={
+          <span className="flex gap-1 text-xs">
+            <Link href={`/campaigns${status ? `?status=${status}` : ""}`} className={mine ? "font-semibold" : "text-zinc-500 underline"}>Mine</Link>
+            <span className="text-zinc-300">|</span>
+            <Link href={`/campaigns?due=all${status ? `&status=${status}` : ""}`} className={!mine ? "font-semibold" : "text-zinc-500 underline"}>Everyone</Link>
+          </span>
+        }
+      />
     </>
   );
 }
