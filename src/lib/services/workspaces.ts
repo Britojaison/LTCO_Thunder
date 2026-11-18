@@ -52,3 +52,16 @@ export async function workspaceStats(db: Db, workspaceId: string) {
   ]);
   return { influencers, brands, campaigns };
 }
+
+export async function getFormToken(db: Db, workspaceId: string) {
+  const { data, error } = await db.from("workspaces_thunder").select("form_token").eq("id", workspaceId).single();
+  fromDb(error, "Loading registration link");
+  return data!.form_token as string;
+}
+
+/** Agency name behind a public registration link, or null if the link is invalid. */
+export async function registrationFormInfo(db: Db, formToken: string) {
+  const { data, error } = await db.rpc("registration_form_info_thunder", { p_form_token: formToken });
+  fromDb(error, "Loading form");
+  return (data as string | null) ?? null;
+}

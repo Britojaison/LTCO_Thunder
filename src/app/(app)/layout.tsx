@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Nav } from "./nav";
+import { Nav, NavFallback } from "./nav";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
@@ -14,7 +14,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             </Suspense>
           </div>
         </div>
-        <Nav />
+        <Suspense fallback={<NavFallback />}>
+          <Nav />
+        </Suspense>
       </aside>
       <main className="flex-1 p-4 md:p-8">{children}</main>
     </div>

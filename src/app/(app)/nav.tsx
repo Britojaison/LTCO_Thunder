@@ -12,6 +12,19 @@ const ITEMS = [
   { href: "/settings", label: "Settings" },
 ];
 
+/** Same links with no active state: shown while the current path streams in. */
+export function NavFallback() {
+  return (
+    <nav className="flex gap-1 overflow-x-auto md:flex-col">
+      {ITEMS.map((item) => (
+        <Link key={item.href} href={item.href} className="whitespace-nowrap rounded-md px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200">
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function Nav() {
   const path = usePathname();
   return (
