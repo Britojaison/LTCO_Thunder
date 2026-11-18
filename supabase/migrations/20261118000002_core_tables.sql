@@ -9,18 +9,18 @@
 -- ─────────────────────────────────────────────────────────────
 -- Workspace configuration
 -- ─────────────────────────────────────────────────────────────
-create table public.workspace_lists (
+create table public.workspace_lists_thunder (
   id            uuid primary key default gen_random_uuid(),
-  workspace_id  uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id  uuid not null references public.workspaces_thunder(id) on delete cascade,
   list_type     text not null check (list_type in ('niche','content_style','city','language','format')),
   value         text not null,
   position      int  not null default 0,
   unique (workspace_id, list_type, value)
 );
 
-create table public.pipeline_stages (
+create table public.pipeline_stages_thunder (
   id            uuid primary key default gen_random_uuid(),
-  workspace_id  uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id  uuid not null references public.workspaces_thunder(id) on delete cascade,
   name          text not null,
   position      int  not null,
   kind          text not null default 'open' check (kind in ('open','done','dropped')),
@@ -29,11 +29,11 @@ create table public.pipeline_stages (
   deleted_at    timestamptz,
   unique (workspace_id, id)
 );
-create index pipeline_stages_ws_idx on public.pipeline_stages (workspace_id, position);
+create index pipeline_stages_ws_idx on public.pipeline_stages_thunder (workspace_id, position);
 
-create table public.custom_field_defs (
+create table public.custom_field_defs_thunder (
   id            uuid primary key default gen_random_uuid(),
-  workspace_id  uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id  uuid not null references public.workspaces_thunder(id) on delete cascade,
   entity        text not null default 'influencer' check (entity in ('influencer')),
   key           text not null check (key ~ '^[a-z][a-z0-9_]{0,49}$'),
   label         text not null,
@@ -49,9 +49,9 @@ create table public.custom_field_defs (
 -- ─────────────────────────────────────────────────────────────
 -- Influencers
 -- ─────────────────────────────────────────────────────────────
-create table public.influencers (
+create table public.influencers_thunder (
   id                  uuid primary key default gen_random_uuid(),
-  workspace_id        uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id        uuid not null references public.workspaces_thunder(id) on delete cascade,
   -- basics
   name                text not null,
   handle              text not null check (handle ~ '^[a-z0-9._]{1,30}$'),  -- lowercase, no @
@@ -101,19 +101,19 @@ create table public.influencers (
   deleted_at          timestamptz,
   unique (workspace_id, id)
 );
-create unique index influencers_handle_uq on public.influencers (workspace_id, handle) where deleted_at is null;
-create index influencers_followers_idx  on public.influencers (workspace_id, followers)       where deleted_at is null;
-create index influencers_er_idx         on public.influencers (workspace_id, engagement_rate) where deleted_at is null;
-create index influencers_rate_reel_idx  on public.influencers (workspace_id, rate_reel)       where deleted_at is null;
-create index influencers_city_idx       on public.influencers (workspace_id, city, state)     where deleted_at is null;
-create index influencers_fit_idx        on public.influencers (workspace_id, fit_base_score desc nulls last) where deleted_at is null;
-create index influencers_niche_gin      on public.influencers using gin (niche_tags);
-create index influencers_lang_gin       on public.influencers using gin (languages);
-create index influencers_formats_gin    on public.influencers using gin (formats);
-create index influencers_name_trgm      on public.influencers using gin (name extensions.gin_trgm_ops);
-create index influencers_handle_trgm    on public.influencers using gin (handle extensions.gin_trgm_ops);
+create unique index influencers_handle_uq on public.influencers_thunder (workspace_id, handle) where deleted_at is null;
+create index influencers_followers_idx  on public.influencers_thunder (workspace_id, followers)       where deleted_at is null;
+create index influencers_er_idx         on public.influencers_thunder (workspace_id, engagement_rate) where deleted_at is null;
+create index influencers_rate_reel_idx  on public.influencers_thunder (workspace_id, rate_reel)       where deleted_at is null;
+create index influencers_city_idx       on public.influencers_thunder (workspace_id, city, state)     where deleted_at is null;
+create index influencers_fit_idx        on public.influencers_thunder (workspace_id, fit_base_score desc nulls last) where deleted_at is null;
+create index influencers_niche_gin      on public.influencers_thunder using gin (niche_tags);
+create index influencers_lang_gin       on public.influencers_thunder using gin (languages);
+create index influencers_formats_gin    on public.influencers_thunder using gin (formats);
+create index influencers_name_trgm      on public.influencers_thunder using gin (name extensions.gin_trgm_ops);
+create index influencers_handle_trgm    on public.influencers_thunder using gin (handle extensions.gin_trgm_ops);
 
-create table public.influencer_competitor_promotions (
+create table public.influencer_competitor_promotions_thunder (
   id            uuid primary key default gen_random_uuid(),
   workspace_id  uuid not null,
   influencer_id uuid not null,
@@ -121,15 +121,15 @@ create table public.influencer_competitor_promotions (
   promoted_on   date not null,
   post_url      text,
   created_at    timestamptz not null default now(),
-  foreign key (workspace_id, influencer_id) references public.influencers (workspace_id, id) on delete cascade
+  foreign key (workspace_id, influencer_id) references public.influencers_thunder (workspace_id, id) on delete cascade
 );
-create index icp_lookup_idx on public.influencer_competitor_promotions (workspace_id, influencer_id, promoted_on desc);
-create index icp_brand_idx  on public.influencer_competitor_promotions (workspace_id, lower(brand_name), promoted_on desc);
+create index icp_lookup_idx on public.influencer_competitor_promotions_thunder (workspace_id, influencer_id, promoted_on desc);
+create index icp_brand_idx  on public.influencer_competitor_promotions_thunder (workspace_id, lower(brand_name), promoted_on desc);
 
 -- Public self-registration lands here for review (inserted only via submit_registration()).
-create table public.pending_influencers (
+create table public.pending_influencers_thunder (
   id            uuid primary key default gen_random_uuid(),
-  workspace_id  uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id  uuid not null references public.workspaces_thunder(id) on delete cascade,
   payload       jsonb not null,
   consent       boolean not null check (consent),
   consent_at    timestamptz not null default now(),
@@ -139,14 +139,14 @@ create table public.pending_influencers (
   influencer_id uuid,
   created_at    timestamptz not null default now()
 );
-create index pending_influencers_ws_idx on public.pending_influencers (workspace_id, status, created_at desc);
+create index pending_influencers_ws_idx on public.pending_influencers_thunder (workspace_id, status, created_at desc);
 
 -- ─────────────────────────────────────────────────────────────
 -- Brands and campaigns
 -- ─────────────────────────────────────────────────────────────
-create table public.brands (
+create table public.brands_thunder (
   id                 uuid primary key default gen_random_uuid(),
-  workspace_id       uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id       uuid not null references public.workspaces_thunder(id) on delete cascade,
   name               text not null,
   logo_path          text,
   category           text,
@@ -158,9 +158,9 @@ create table public.brands (
   deleted_at         timestamptz,
   unique (workspace_id, id)
 );
-create unique index brands_name_uq on public.brands (workspace_id, lower(name)) where deleted_at is null;
+create unique index brands_name_uq on public.brands_thunder (workspace_id, lower(name)) where deleted_at is null;
 
-create table public.campaigns (
+create table public.campaigns_thunder (
   id              uuid primary key default gen_random_uuid(),
   workspace_id    uuid not null,
   brand_id        uuid not null,
@@ -179,15 +179,15 @@ create table public.campaigns (
   deleted_at      timestamptz,
   unique (workspace_id, id),
   check (end_date is null or start_date is null or end_date >= start_date),
-  foreign key (workspace_id, brand_id) references public.brands (workspace_id, id)
+  foreign key (workspace_id, brand_id) references public.brands_thunder (workspace_id, id)
 );
-create index campaigns_ws_status_idx on public.campaigns (workspace_id, status) where deleted_at is null;
-create index campaigns_brand_idx     on public.campaigns (workspace_id, brand_id);
+create index campaigns_ws_status_idx on public.campaigns_thunder (workspace_id, status) where deleted_at is null;
+create index campaigns_brand_idx     on public.campaigns_thunder (workspace_id, brand_id);
 
 -- ─────────────────────────────────────────────────────────────
 -- Deals (one per influencer per campaign) and money
 -- ─────────────────────────────────────────────────────────────
-create table public.deals (
+create table public.deals_thunder (
   id                 uuid primary key default gen_random_uuid(),
   workspace_id       uuid not null,
   campaign_id        uuid not null,
@@ -221,19 +221,19 @@ create table public.deals (
   updated_at         timestamptz not null default now(),
   deleted_at         timestamptz,
   unique (workspace_id, id),
-  foreign key (workspace_id, campaign_id)   references public.campaigns (workspace_id, id),
-  foreign key (workspace_id, influencer_id) references public.influencers (workspace_id, id),
-  foreign key (workspace_id, stage_id)      references public.pipeline_stages (workspace_id, id),
-  foreign key (workspace_id, owner_id)      references public.workspace_members (workspace_id, user_id)
+  foreign key (workspace_id, campaign_id)   references public.campaigns_thunder (workspace_id, id),
+  foreign key (workspace_id, influencer_id) references public.influencers_thunder (workspace_id, id),
+  foreign key (workspace_id, stage_id)      references public.pipeline_stages_thunder (workspace_id, id),
+  foreign key (workspace_id, owner_id)      references public.workspace_members_thunder (workspace_id, user_id)
     on delete set null (owner_id)
 );
-create unique index deals_one_per_influencer on public.deals (workspace_id, campaign_id, influencer_id) where deleted_at is null;
-create index deals_pipeline_idx   on public.deals (workspace_id, campaign_id, stage_id, position) where deleted_at is null;
-create index deals_influencer_idx on public.deals (workspace_id, influencer_id);
-create index deals_owner_idx      on public.deals (workspace_id, owner_id) where deleted_at is null;
-create index deals_payment_idx    on public.deals (workspace_id, payment_status, payment_due_date) where deleted_at is null;
+create unique index deals_one_per_influencer on public.deals_thunder (workspace_id, campaign_id, influencer_id) where deleted_at is null;
+create index deals_pipeline_idx   on public.deals_thunder (workspace_id, campaign_id, stage_id, position) where deleted_at is null;
+create index deals_influencer_idx on public.deals_thunder (workspace_id, influencer_id);
+create index deals_owner_idx      on public.deals_thunder (workspace_id, owner_id) where deleted_at is null;
+create index deals_payment_idx    on public.deals_thunder (workspace_id, payment_status, payment_due_date) where deleted_at is null;
 
-create table public.contact_logs (
+create table public.contact_logs_thunder (
   id            uuid primary key default gen_random_uuid(),
   workspace_id  uuid not null,
   deal_id       uuid not null,
@@ -242,11 +242,11 @@ create table public.contact_logs (
   member_id     uuid references auth.users(id) on delete set null,
   contacted_at  timestamptz not null default now(),
   created_at    timestamptz not null default now(),
-  foreign key (workspace_id, deal_id) references public.deals (workspace_id, id) on delete cascade
+  foreign key (workspace_id, deal_id) references public.deals_thunder (workspace_id, id) on delete cascade
 );
-create index contact_logs_deal_idx on public.contact_logs (workspace_id, deal_id, contacted_at desc);
+create index contact_logs_deal_idx on public.contact_logs_thunder (workspace_id, deal_id, contacted_at desc);
 
-create table public.rate_history (
+create table public.rate_history_thunder (
   id              uuid primary key default gen_random_uuid(),
   workspace_id    uuid not null,
   influencer_id   uuid not null,
@@ -256,14 +256,14 @@ create table public.rate_history (
   campaign_id     uuid,
   deal_id         uuid,
   created_at      timestamptz not null default now(),
-  foreign key (workspace_id, influencer_id) references public.influencers (workspace_id, id) on delete cascade
+  foreign key (workspace_id, influencer_id) references public.influencers_thunder (workspace_id, id) on delete cascade
 );
-create index rate_history_idx on public.rate_history (workspace_id, influencer_id, effective_date desc);
+create index rate_history_idx on public.rate_history_thunder (workspace_id, influencer_id, effective_date desc);
 
 -- ─────────────────────────────────────────────────────────────
 -- Posts and metric snapshots (append-only; partition by month later)
 -- ─────────────────────────────────────────────────────────────
-create table public.posts (
+create table public.posts_thunder (
   id              uuid primary key default gen_random_uuid(),
   workspace_id    uuid not null,
   deal_id         uuid not null,
@@ -277,12 +277,12 @@ create table public.posts (
   updated_at      timestamptz not null default now(),
   deleted_at      timestamptz,
   unique (workspace_id, id),
-  foreign key (workspace_id, deal_id) references public.deals (workspace_id, id)
+  foreign key (workspace_id, deal_id) references public.deals_thunder (workspace_id, id)
 );
-create index posts_deal_idx   on public.posts (workspace_id, deal_id) where deleted_at is null;
-create index posts_posted_idx on public.posts (workspace_id, posted_at) where deleted_at is null;
+create index posts_deal_idx   on public.posts_thunder (workspace_id, deal_id) where deleted_at is null;
+create index posts_posted_idx on public.posts_thunder (workspace_id, posted_at) where deleted_at is null;
 
-create table public.metric_snapshots (
+create table public.metric_snapshots_thunder (
   id               uuid primary key default gen_random_uuid(),
   workspace_id     uuid not null,
   post_id          uuid not null,
@@ -301,14 +301,14 @@ create table public.metric_snapshots (
   source           text not null default 'manual' check (source in ('manual','api')),
   created_by       uuid references auth.users(id) on delete set null,
   created_at       timestamptz not null default now(),
-  foreign key (workspace_id, post_id) references public.posts (workspace_id, id)
+  foreign key (workspace_id, post_id) references public.posts_thunder (workspace_id, id)
 );
-create index metric_snapshots_post_idx on public.metric_snapshots (workspace_id, post_id, captured_at desc);
+create index metric_snapshots_post_idx on public.metric_snapshots_thunder (workspace_id, post_id, captured_at desc);
 
 -- ─────────────────────────────────────────────────────────────
 -- Reports, templates, saved searches
 -- ─────────────────────────────────────────────────────────────
-create table public.report_templates (
+create table public.report_templates_thunder (
   id            uuid primary key default gen_random_uuid(),
   workspace_id  uuid not null,
   brand_id      uuid not null,
@@ -319,10 +319,10 @@ create table public.report_templates (
   updated_at    timestamptz not null default now(),
   deleted_at    timestamptz,
   unique (workspace_id, id),
-  foreign key (workspace_id, brand_id) references public.brands (workspace_id, id)
+  foreign key (workspace_id, brand_id) references public.brands_thunder (workspace_id, id)
 );
 
-create table public.reports (
+create table public.reports_thunder (
   id            uuid primary key default gen_random_uuid(),
   workspace_id  uuid not null,
   campaign_id   uuid not null,
@@ -332,14 +332,14 @@ create table public.reports (
   status        text not null default 'queued' check (status in ('queued','rendering','ready','failed')),
   created_by    uuid references auth.users(id) on delete set null,
   created_at    timestamptz not null default now(),
-  foreign key (workspace_id, campaign_id) references public.campaigns (workspace_id, id),
-  foreign key (workspace_id, template_id) references public.report_templates (workspace_id, id)
+  foreign key (workspace_id, campaign_id) references public.campaigns_thunder (workspace_id, id),
+  foreign key (workspace_id, template_id) references public.report_templates_thunder (workspace_id, id)
 );
-create index reports_campaign_idx on public.reports (workspace_id, campaign_id, created_at desc);
+create index reports_campaign_idx on public.reports_thunder (workspace_id, campaign_id, created_at desc);
 
-create table public.saved_searches (
+create table public.saved_searches_thunder (
   id            uuid primary key default gen_random_uuid(),
-  workspace_id  uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id  uuid not null references public.workspaces_thunder(id) on delete cascade,
   name          text not null,
   filters       jsonb not null,
   created_by    uuid references auth.users(id) on delete set null,
@@ -352,9 +352,9 @@ create table public.saved_searches (
 -- Background jobs (Meta refresh, PDFs, imports, reminders)
 -- Service role only: no policies for app users.
 -- ─────────────────────────────────────────────────────────────
-create table public.jobs (
+create table public.jobs_thunder (
   id               bigint generated always as identity primary key,
-  workspace_id     uuid not null references public.workspaces(id) on delete cascade,
+  workspace_id     uuid not null references public.workspaces_thunder(id) on delete cascade,
   kind             text not null,
   payload          jsonb not null default '{}'::jsonb,
   status           text not null default 'queued' check (status in ('queued','running','done','failed')),
@@ -367,30 +367,30 @@ create table public.jobs (
   created_at       timestamptz not null default now(),
   finished_at      timestamptz
 );
-create unique index jobs_idem_uq on public.jobs (workspace_id, kind, idempotency_key) where idempotency_key is not null;
-create index jobs_pick_idx on public.jobs (status, run_after) where status = 'queued';
+create unique index jobs_idem_uq on public.jobs_thunder (workspace_id, kind, idempotency_key) where idempotency_key is not null;
+create index jobs_pick_idx on public.jobs_thunder (status, run_after) where status = 'queued';
 
 -- ─────────────────────────────────────────────────────────────
 -- Triggers
 -- ─────────────────────────────────────────────────────────────
-select private.track('public.workspace_lists', false);
-select private.track('public.pipeline_stages');
-select private.track('public.custom_field_defs');
-select private.track('public.influencers');
-select private.track('public.influencer_competitor_promotions', false);
-select private.track('public.pending_influencers', false);
-select private.track('public.brands');
-select private.track('public.campaigns');
-select private.track('public.deals');
-select private.track('public.contact_logs', false);
-select private.track('public.posts');
-select private.track('public.metric_snapshots', false);
-select private.track('public.report_templates');
-select private.track('public.reports', false);
-select private.track('public.saved_searches');
+select thunder_private.track('public.workspace_lists_thunder', false);
+select thunder_private.track('public.pipeline_stages_thunder');
+select thunder_private.track('public.custom_field_defs_thunder');
+select thunder_private.track('public.influencers_thunder');
+select thunder_private.track('public.influencer_competitor_promotions_thunder', false);
+select thunder_private.track('public.pending_influencers_thunder', false);
+select thunder_private.track('public.brands_thunder');
+select thunder_private.track('public.campaigns_thunder');
+select thunder_private.track('public.deals_thunder');
+select thunder_private.track('public.contact_logs_thunder', false);
+select thunder_private.track('public.posts_thunder');
+select thunder_private.track('public.metric_snapshots_thunder', false);
+select thunder_private.track('public.report_templates_thunder');
+select thunder_private.track('public.reports_thunder', false);
+select thunder_private.track('public.saved_searches_thunder');
 
 -- New deals start in the workspace's first open stage.
-create or replace function private.deal_default_stage()
+create or replace function thunder_private.deal_default_stage()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -398,7 +398,7 @@ as $$
 begin
   if new.stage_id is null then
     select s.id into new.stage_id
-    from public.pipeline_stages s
+    from public.pipeline_stages_thunder s
     where s.workspace_id = new.workspace_id and s.deleted_at is null
     order by s.position
     limit 1;
@@ -406,11 +406,11 @@ begin
   return new;
 end;
 $$;
-create trigger deal_default_stage before insert on public.deals
-  for each row execute function private.deal_default_stage();
+create trigger deal_default_stage before insert on public.deals_thunder
+  for each row execute function thunder_private.deal_default_stage();
 
 -- Every agreed payout is added to the influencer's rate history.
-create or replace function private.deal_rate_history()
+create or replace function thunder_private.deal_rate_history()
 returns trigger
 language plpgsql security definer
 set search_path = ''
@@ -426,13 +426,13 @@ begin
     into fmt
   from jsonb_array_elements(new.deliverables) d;
 
-  insert into public.rate_history (workspace_id, influencer_id, format, amount, campaign_id, deal_id)
+  insert into public.rate_history_thunder (workspace_id, influencer_id, format, amount, campaign_id, deal_id)
   values (new.workspace_id, new.influencer_id, coalesce(fmt, 'bundle'), new.payout, new.campaign_id, new.id);
   return new;
 end;
 $$;
-create trigger deal_rate_history after insert or update of payout on public.deals
-  for each row execute function private.deal_rate_history();
+create trigger deal_rate_history after insert or update of payout on public.deals_thunder
+  for each row execute function thunder_private.deal_rate_history();
 
 -- ─────────────────────────────────────────────────────────────
 -- RLS: members get select/insert/update; no delete (soft delete only).
@@ -442,34 +442,34 @@ declare
   t text;
 begin
   foreach t in array array[
-    'workspace_lists','pipeline_stages','custom_field_defs','influencers',
-    'influencer_competitor_promotions','brands','campaigns','deals','contact_logs',
-    'rate_history','posts','metric_snapshots','report_templates','reports','saved_searches'
+    'workspace_lists_thunder','pipeline_stages_thunder','custom_field_defs_thunder','influencers_thunder',
+    'influencer_competitor_promotions_thunder','brands_thunder','campaigns_thunder','deals_thunder','contact_logs_thunder',
+    'rate_history_thunder','posts_thunder','metric_snapshots_thunder','report_templates_thunder','reports_thunder','saved_searches_thunder'
   ] loop
     execute format('alter table public.%I enable row level security', t);
     execute format($p$create policy %1$s_select on public.%1$I for select to authenticated
-                     using ((select private.is_member(workspace_id)))$p$, t);
+                     using ((select thunder_private.is_member(workspace_id)))$p$, t);
     execute format($p$create policy %1$s_insert on public.%1$I for insert to authenticated
-                     with check ((select private.is_member(workspace_id)))$p$, t);
+                     with check ((select thunder_private.is_member(workspace_id)))$p$, t);
     execute format($p$create policy %1$s_update on public.%1$I for update to authenticated
-                     using ((select private.is_member(workspace_id)))
-                     with check ((select private.is_member(workspace_id)))$p$, t);
+                     using ((select thunder_private.is_member(workspace_id)))
+                     with check ((select thunder_private.is_member(workspace_id)))$p$, t);
   end loop;
 end;
 $$;
 
 -- Small lookup/config tables can be hard-deleted by members.
-create policy workspace_lists_delete on public.workspace_lists for delete to authenticated
-  using ((select private.is_member(workspace_id)));
-create policy icp_delete on public.influencer_competitor_promotions for delete to authenticated
-  using ((select private.is_member(workspace_id)));
+create policy workspace_lists_delete on public.workspace_lists_thunder for delete to authenticated
+  using ((select thunder_private.is_member(workspace_id)));
+create policy icp_delete on public.influencer_competitor_promotions_thunder for delete to authenticated
+  using ((select thunder_private.is_member(workspace_id)));
 
 -- Pending registrations: members review (select/update) only.
-alter table public.pending_influencers enable row level security;
-create policy pending_select on public.pending_influencers for select to authenticated
-  using ((select private.is_member(workspace_id)));
-create policy pending_update on public.pending_influencers for update to authenticated
-  using ((select private.is_member(workspace_id))) with check ((select private.is_member(workspace_id)));
+alter table public.pending_influencers_thunder enable row level security;
+create policy pending_select on public.pending_influencers_thunder for select to authenticated
+  using ((select thunder_private.is_member(workspace_id)));
+create policy pending_update on public.pending_influencers_thunder for update to authenticated
+  using ((select thunder_private.is_member(workspace_id))) with check ((select thunder_private.is_member(workspace_id)));
 
 -- Jobs: service role only.
-alter table public.jobs enable row level security;
+alter table public.jobs_thunder enable row level security;

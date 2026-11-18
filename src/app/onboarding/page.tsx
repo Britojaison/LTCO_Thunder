@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { OnboardingForm } from "./onboarding-form";
+import { SignedInAs } from "./signed-in-as";
 
 export const metadata = { title: "Set up your workspace" };
 
@@ -10,6 +12,9 @@ export default function OnboardingPage() {
         <p className="mb-6 text-sm text-zinc-500">
           Everything in Thunder lives inside a workspace. Only its members can see its data.
         </p>
+        <Suspense fallback={<div className="mb-4 h-8" />}>
+          <SignedInAs />
+        </Suspense>
         <OnboardingForm />
       </div>
     </main>

@@ -11,7 +11,7 @@ export type WorkspaceSummary = { id: string; name: string; logo_path: string | n
 
 export async function listMyWorkspaces(db: Db): Promise<WorkspaceSummary[]> {
   const { data, error } = await db
-    .from("workspaces")
+    .from("workspaces_thunder")
     .select("id, name, logo_path")
     .is("deleted_at", null)
     .order("created_at");
@@ -27,7 +27,7 @@ export const createWorkspaceInput = z.object({
 export async function createWorkspace(db: Db, input: z.input<typeof createWorkspaceInput>) {
   const parsed = createWorkspaceInput.safeParse(input);
   if (!parsed.success) throw new ServiceError(parsed.error.issues[0].message, "validation");
-  const { data, error } = await db.rpc("create_workspace", {
+  const { data, error } = await db.rpc("create_workspace_thunder", {
     p_name: parsed.data.name,
     p_full_name: parsed.data.fullName ?? null,
   });
@@ -46,9 +46,9 @@ export async function workspaceStats(db: Db, workspaceId: string) {
     return count ?? 0;
   };
   const [influencers, brands, campaigns] = await Promise.all([
-    count("influencers"),
-    count("brands"),
-    count("campaigns"),
+    count("influencers_thunder"),
+    count("brands_thunder"),
+    count("campaigns_thunder"),
   ]);
   return { influencers, brands, campaigns };
 }

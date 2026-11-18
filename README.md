@@ -6,19 +6,23 @@ Stack: Next.js 16 (App Router, Cache Components) · Supabase (Postgres + RLS, Au
 
 ## First-time setup
 
-1. **Create a Supabase project** at supabase.com. In *Authentication → Providers*, keep Email on and (optionally) enable Google.
-   In *Authentication → URL configuration* add `http://localhost:3000/auth/callback` as a redirect URL.
-2. **Install the Supabase CLI** (macOS): `brew install supabase/tap/supabase`
-3. **Apply the database migrations**
-   ```bash
-   supabase login
-   supabase init            # only once, creates supabase/config.toml (keep the existing migrations folder)
-   supabase link --project-ref <your-project-ref>
-   supabase db push         # runs supabase/migrations/*.sql in order
+> Thunder currently shares a Supabase project with another app (cost saving). Everything Thunder creates is namespaced so it can't collide:
+> tables/views end in `_thunder`, helpers live in the `thunder_private` schema, RPCs end in `_thunder`, the storage bucket is `thunder-files`,
+> and the cron job is `thunder-purge-soft-deleted`. Auth users are shared, so workspace creation is limited to `access_allowlist_thunder`.
+
+1. **Run the migrations in the shared project's SQL Editor**, one file at a time, in order:
+   `supabase/migrations/20261118000001_foundation.sql` → `…0002_core_tables.sql` → `…0003_rpc_and_views.sql` → `…0004_storage_and_cron.sql`.
+   (Don't use `supabase db push` against the shared project: it would clash with the other app's migration history.)
+   If 0004 fails on `pg_cron`, enable it under *Database → Extensions*, then run 0004 again.
+2. **Approve who can create a workspace** (SQL Editor):
+   ```sql
+   insert into public.access_allowlist_thunder (email) values ('you@agency.com');
    ```
-   Migration 0004 enables `pg_cron`. If it fails, enable *pg_cron* under Database → Extensions and run `supabase db push` again.
-4. **Environment**: `cp .env.example .env.local` and fill in the URL and publishable key (Project settings → API).
-5. **Run**: `npm install && npm run dev` → http://localhost:3000. Sign up, create your agency workspace, done.
+   Teammates don't need this. They join through invites.
+3. **Auth settings**: in *Authentication → URL configuration* add `http://localhost:3000/auth/callback` (and your Vercel URL later)
+   as an additional redirect URL. **Leave the Site URL as the other app's.** Google sign-in uses the project's existing Google provider.
+4. **Environment**: `cp .env.example .env.local` and fill in the shared project's URL and publishable key (Project settings → API).
+5. **Run**: `npm install && npm run dev` → http://localhost:3000. Sign up with the approved email and create your agency workspace.
 
 ## Project structure
 
@@ -34,9 +38,9 @@ src/
     login/ onboarding/ auth/ # sign in, sign up, Google, workspace creation
     (app)/                  # signed-in shell: nav + workspace switcher + module pages
 supabase/migrations/
-  0001_foundation           # workspaces, members, invites, is_member(), activity log triggers
+  0001_foundation           # workspaces, members, invites, allowlist, is_member(), activity log triggers
   0002_core_tables          # influencers, brands, campaigns, deals (margin), posts, snapshots, reports, jobs + RLS
-  0003_rpc_and_views        # create_workspace, accept_invite, submit_registration, client-safe report views
+  0003_rpc_and_views        # create_workspace_thunder, accept_invite_thunder, submit_registration_thunder, report views
   0004_storage_and_cron     # per-workspace file bucket policies, nightly soft-delete purge
 ```
 
@@ -45,6 +49,7 @@ supabase/migrations/
 - **Server actions and route handlers stay thin**: validate input, call `lib/services/*`, return. This keeps a later move to a standalone backend cheap.
 - **Never** use the service-role key in the web app. RLS is the security boundary.
 - **Session reads go inside `<Suspense>`** (Cache Components). Call `requireWorkspace()` in the async child, not in the page or layout body.
-- **Client reports read only from `report_deals` and `report_post_metrics`.** These views have no payout or margin columns.
+- **Client reports read only from `report_deals_thunder` and `report_post_metrics_thunder`.** These views have no payout or margin columns.
 - **No hard deletes from the app**: set `deleted_at`. A nightly job purges rows older than 30 days.
-- **New tables**: add `workspace_id`, a composite FK to the parent, RLS policies via the same pattern, and `select private.track('public.<table>')`.
+- **Namespacing**: tables, views and public functions end with `_thunder`; internal helpers go in the `thunder_private` schema.
+- **New tables**: name them `<name>_thunder`, add `workspace_id`, a composite FK to the parent, RLS policies via the same pattern, and `select thunder_private.track('public.<name>_thunder')`.
