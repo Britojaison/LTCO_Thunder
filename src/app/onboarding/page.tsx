@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { OnboardingForm } from "./onboarding-form";
 import { SignedInAs } from "./signed-in-as";
+import { PendingInvites } from "./pending-invites";
 
 export const metadata = { title: "Set up your workspace" };
 
@@ -14,6 +15,9 @@ export default function OnboardingPage() {
         </p>
         <Suspense fallback={<div className="mb-4 h-8" />}>
           <SignedInAs />
+        </Suspense>
+        <Suspense fallback={null}>
+          <PendingInvites />
         </Suspense>
         <OnboardingForm />
       </div>

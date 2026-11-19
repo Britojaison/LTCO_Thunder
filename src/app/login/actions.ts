@@ -32,13 +32,15 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const db = await createClient();
+  const requested = safeNext(form.get("next"));
+  const next = requested === "/" ? "/onboarding" : requested; // invite links come back here after sign-up
   const { data, error } = await db.auth.signUp({
     ...parsed.data,
-    options: { emailRedirectTo: `${env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/onboarding` },
+    options: { emailRedirectTo: `${env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=${encodeURIComponent(next)}` },
   });
   if (error) return { error: error.message };
-  if (!data.session) return { message: "Check your email to confirm your account." };
-  redirect("/onboarding");
+  if (!data.session) return { message: "Check your email to confirm your account, then use the link in that email." };
+  redirect(next);
 }
 
 export async function signInWithGoogle(form: FormData) {
