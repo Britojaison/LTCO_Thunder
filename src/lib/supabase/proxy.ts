@@ -28,16 +28,20 @@ export async function updateSession(request: NextRequest) {
   const signedIn = Boolean(data?.claims?.sub);
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + "/"));
+  // Only redirect normal page visits. Form submissions (server actions) and other non-GET
+  // requests must reach their route, or the browser gets an unexpected response.
+  const isPageVisit = request.method === "GET" && !request.headers.has("next-action");
 
-  if (!signedIn && !isPublic) {
+  if (isPageVisit && !signedIn && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
     return NextResponse.redirect(url);
   }
-  if (signedIn && path === "/login") {
+  if (isPageVisit && signedIn && path === "/login") {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    const next = request.nextUrl.searchParams.get("next");
+    url.pathname = next && next.startsWith("/") && !next.startsWith("//") ? next : "/influencers";
     url.search = "";
     return NextResponse.redirect(url);
   }
