@@ -13,9 +13,10 @@ type Props = {
   required: { format: string; count: number }[];
   rates: Record<string, number | null>;
   stats: RateStats;
+  products: string[];
   initial: {
     stage_id: string | null; owner_id: string | null; deliverables: { format: string; count: number }[];
-    client_price: number | null; payout: number | null; barter_value: number | null;
+    client_price: number | null; payout: number | null; barter_value: number | null; product: string | null;
     due_date: string | null; posting_date: string | null; usage_rights_days: number | null;
   };
 };
@@ -23,7 +24,7 @@ type Props = {
 const FORMATS = [["reel", "Reels"], ["story", "Stories"], ["carousel", "Carousels"], ["collab", "Collab posts"]] as const;
 const num = (s: string) => (s.trim() === "" ? null : Number(s.replace(/[₹, ]/g, "")));
 
-export function DealForm({ dealId, stages, members, required, rates, stats, initial }: Props) {
+export function DealForm({ dealId, stages, members, required, rates, stats, products, initial }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(updateDealAction.bind(null, dealId), {});
   const v = state.values;
   const str = (k: string, fallback: unknown) => (v?.[k] as string | undefined) ?? (fallback === null || fallback === undefined ? "" : String(fallback));
@@ -38,8 +39,8 @@ export function DealForm({ dealId, stages, members, required, rates, stats, init
     <form action={action} key={JSON.stringify(v ?? "init")}>
       <Card title="Deal for this campaign" actions={state.ok && <span className="text-xs text-emerald-700">{state.ok}</span>}>
         <p className="-mt-1 mb-3 text-xs text-zinc-500">
-          Prices here apply to this campaign only. They don’t change the influencer’s profile; the profile shows the average of all their deals.
-          {stats.all ? ` Average payout per deal so far: ${inr(stats.all.avg_payout)} across ${stats.all.deals}.` : ""}
+          Prices here apply to this campaign only. The influencer’s profile shows the latest amount they were paid.
+          {stats.all ? ` Last payout: ${inr(stats.all.latest_payout)} (${new Date(stats.all.on).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}).` : ""}
         </p>
         {state.error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
         <div className="grid gap-3 sm:grid-cols-2">
@@ -56,12 +57,19 @@ export function DealForm({ dealId, stages, members, required, rates, stats, init
           </Field>
         </div>
 
+        <div className="mt-3">
+          <Field label="Product" hint="Which product this influencer promotes in this campaign. Can be shown in the client report.">
+            <input name="product" list="deal-products" defaultValue={str("product", initial.product)} placeholder="e.g. Skyr Mango" className={inputCls} />
+            <datalist id="deal-products">{products.map((p) => <option key={p} value={p} />)}</datalist>
+          </Field>
+        </div>
+
         <p className="mt-4 text-xs font-medium text-zinc-600">
           Deliverables{required.length > 0 && <span className="font-normal text-zinc-400"> · campaign asks for {required.map((r) => `${r.count} ${r.format}`).join(", ")}</span>}
         </p>
         <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {FORMATS.map(([f, label]) => (
-            <Field key={f} label={label} hint={stats[f] ? `Usually ${inr(stats[f]!.avg)} (avg of ${stats[f]!.deals})` : rates[f] ? `Quoted ${inr(rates[f])}` : undefined}>
+            <Field key={f} label={label} hint={stats[f] ? `Last paid ${inr(stats[f]!.latest)}` : rates[f] ? `Quoted ${inr(rates[f])}` : undefined}>
               <input name={`deliv_${f}`} type="number" min={0} defaultValue={delivCount(f)} className={inputCls} />
             </Field>
           ))}

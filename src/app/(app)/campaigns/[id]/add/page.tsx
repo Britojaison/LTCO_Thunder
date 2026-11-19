@@ -9,6 +9,7 @@ import { workspaceVocab } from "@/lib/services/lists";
 import { ServiceError } from "@/lib/services/errors";
 import { btnPrimary, btnSecondary, Card, Field, inputCls } from "@/components/ui";
 import { CampaignPicker } from "./picker";
+import { brandProducts } from "@/lib/services/deals";
 import { QuickAdd } from "../../quick-add";
 
 export const metadata = { title: "Add influencers" };
@@ -50,6 +51,7 @@ async function Picker({ params, searchParams }: { params: PageProps<"/campaigns/
     `${here}${filtersToQuery({ ...base, competitor_brand_id: undefined }, { competitors: hideCompetitors ? undefined : "show", ...extra })}`;
   const join = (a?: string[]) => (a ?? []).join(", ");
 
+  const products = await brandProducts(db, workspace.id, campaign.brand_id);
   return (
     <>
       <div>
@@ -58,7 +60,7 @@ async function Picker({ params, searchParams }: { params: PageProps<"/campaigns/
         <p className="text-sm text-zinc-500">{inCampaign.size} already in this campaign. New additions start as Shortlisted.</p>
       </div>
 
-      <QuickAdd campaignId={id} defaultOpen={rows.length === 0} defaultHandle={rows.length === 0 && base.q ? base.q : ""} />
+      <QuickAdd products={products} campaignId={id} defaultOpen={rows.length === 0} defaultHandle={rows.length === 0 && base.q ? base.q : ""} />
 
       <Card>
         <form action={here} method="get" className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-6">

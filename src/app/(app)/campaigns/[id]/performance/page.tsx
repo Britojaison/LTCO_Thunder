@@ -83,7 +83,7 @@ async function Perf({ params, searchParams }: { params: PageProps<"/campaigns/[i
                 <tr key={deal.id} className="border-b border-zinc-100">
                   <td className="p-2">
                     <Link href={`/campaigns/${id}/deals/${deal.id}`} className="font-medium text-blue-700 hover:underline">{deal.influencer?.name}</Link>
-                    <div className="text-xs text-zinc-500">{price !== null ? inr(price) : "no price"}</div>
+                    <div className="text-xs text-zinc-500">{[deal.product, price !== null ? inr(price) : "no price"].filter(Boolean).join(" · ")}</div>
                   </td>
                   <td className="p-2 text-right tabular-nums">{posts.length || <span className="text-zinc-300">0</span>}</td>
                   {cols.map((c) => <td key={c} className="p-2 text-right tabular-nums">{n(m[c])}</td>)}

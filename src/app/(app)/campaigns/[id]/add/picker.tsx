@@ -48,7 +48,7 @@ export function CampaignPicker({ campaignId, rows, inCampaign }: { campaignId: s
                   onChange={() => setSelected(allOn ? new Set() : new Set(selectable.map((r) => r.id)))} />
               </th>
               <th className="p-2">Fit</th><th className="p-2">Influencer</th><th className="p-2">Location</th><th className="p-2">Niches</th>
-              <th className="p-2 text-right">Followers</th><th className="p-2 text-right">ER</th><th className="p-2 text-right" title="Average of real deals, or quoted rate if none yet">Avg reel rate</th><th className="p-2" />
+              <th className="p-2 text-right">Followers</th><th className="p-2 text-right">ER</th><th className="p-2 text-right" title="Latest amount paid, or quoted rate if no deals yet">Reel rate</th><th className="p-2" />
             </tr>
           </thead>
           <tbody>

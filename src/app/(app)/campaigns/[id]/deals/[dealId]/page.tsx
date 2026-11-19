@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth";
-import { getDeal, listContacts, listMembers, listStages } from "@/lib/services/deals";
+import { getDeal, listContacts, listMembers, listStages, brandProducts } from "@/lib/services/deals";
 import { listPosts } from "@/lib/services/posts";
 import { signedUrls } from "@/lib/services/storage";
 import { ServiceError } from "@/lib/services/errors";
@@ -39,6 +39,7 @@ async function Deal({ params }: { params: PageProps<"/campaigns/[id]/deals/[deal
     signedUrls(db, [deal.contract_path, deal.invoice_path]),
     listPosts(db, workspace.id, dealId),
   ]);
+  const products = deal.campaign ? await brandProducts(db, workspace.id, deal.campaign.brand_id) : [];
   const shotUrls = await signedUrls(db, posts.flatMap((p) => p.snapshots.flatMap((s) => s.screenshot_paths ?? [])));
   const memberName = new Map(members.map((m) => [m.user_id, m.full_name || m.email]));
   const inf = deal.influencer;
@@ -69,6 +70,7 @@ async function Deal({ params }: { params: PageProps<"/campaigns/[id]/deals/[deal
             required={deal.campaign?.deliverables ?? []}
             rates={{ reel: inf.rate_reel, story: inf.rate_story, carousel: inf.rate_carousel, collab: inf.rate_collab }}
             stats={inf.rate_stats ?? {}}
+            products={products}
             initial={deal}
           />
           <PostsSection dealId={dealId} posts={posts} clientPrice={deal.client_price} payout={deal.payout} shotUrls={shotUrls} />

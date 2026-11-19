@@ -6,7 +6,7 @@ import { quickAddAction, type QuickAddState } from "./actions";
 import { btnPrimary, btnSecondary, inputCls } from "@/components/ui";
 
 /** Add a brand-new (or existing) influencer to this campaign without leaving it. */
-export function QuickAdd({ campaignId, defaultOpen = false, defaultHandle = "" }: { campaignId: string; defaultOpen?: boolean; defaultHandle?: string }) {
+export function QuickAdd({ campaignId, defaultOpen = false, defaultHandle = "", products = [] }: { campaignId: string; defaultOpen?: boolean; defaultHandle?: string; products?: string[] }) {
   const [open, setOpen] = useState(defaultOpen);
   const [state, action, pending] = useActionState<QuickAddState, FormData>(quickAddAction.bind(null, campaignId), {});
   const v = state.values ?? (state.result ? {} : { handle: defaultHandle });
@@ -43,9 +43,11 @@ export function QuickAdd({ campaignId, defaultOpen = false, defaultHandle = "" }
         <input name="city" placeholder="City" defaultValue={s("city")} className={inputCls} />
         <input name="phone" placeholder="Phone / WhatsApp" defaultValue={s("phone")} className={inputCls} />
         <input name="niche_tags" placeholder="Niches (comma separated)" defaultValue={s("niche_tags")} className={inputCls} />
+        <input name="product" list="quick-products" placeholder="Product (optional)" defaultValue={s("product")} className={inputCls} />
+        <datalist id="quick-products">{products.map((p) => <option key={p} value={p} />)}</datalist>
         <input name="client_price" inputMode="numeric" placeholder="Cost to client ₹ (optional)" defaultValue={s("client_price")} className={inputCls} />
         <input name="payout" inputMode="numeric" placeholder="Payout ₹ (optional)" defaultValue={s("payout")} className={inputCls} />
-        <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-4">
+        <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-3">
           <button disabled={pending} className={btnPrimary}>{pending ? "Adding…" : "Add to campaign"}</button>
           <span className="text-xs text-zinc-500">
             If the handle is already in your databank, the existing profile is used. Fill in the full profile later from the influencer page.

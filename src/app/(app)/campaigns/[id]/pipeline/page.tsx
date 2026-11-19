@@ -9,6 +9,7 @@ import { btnPrimary, Card } from "@/components/ui";
 import { CampaignTabs } from "../../campaign-tabs";
 import { StatusBadge } from "../../status-badge";
 import { Board } from "./board";
+import { brandProducts } from "@/lib/services/deals";
 import { QuickAdd } from "../../quick-add";
 
 export const metadata = { title: "Pipeline" };
@@ -26,6 +27,7 @@ async function Pipeline({ params }: { params: PageProps<"/campaigns/[id]/pipelin
   });
   const [stages, deals] = await Promise.all([listStages(db, workspace.id), listDeals(db, workspace.id, id)]);
 
+  const products = await brandProducts(db, workspace.id, campaign.brand_id);
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
@@ -36,7 +38,7 @@ async function Pipeline({ params }: { params: PageProps<"/campaigns/[id]/pipelin
         <Link href={`/campaigns/${id}/add`} className={btnPrimary}>Add from databank</Link>
       </div>
       <CampaignTabs id={id} active="pipeline" />
-      <QuickAdd campaignId={id} />
+      <QuickAdd products={products} campaignId={id} />
       {deals.length === 0 ? (
         <Card><p className="text-sm text-zinc-600">No influencers in this campaign yet. <Link href={`/campaigns/${id}/add`} className="underline">Add some from your databank</Link>.</p></Card>
       ) : (

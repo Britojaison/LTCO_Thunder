@@ -11,6 +11,7 @@ import { MoneyCards } from "@/components/money";
 import { cap, compact, dateIN, inr } from "@/lib/format";
 import { StatusBadge } from "../status-badge";
 import { CampaignTabs } from "../campaign-tabs";
+import { brandProducts } from "@/lib/services/deals";
 import { QuickAdd } from "../quick-add";
 import { deleteCampaignAction, setStatusAction } from "../actions";
 
@@ -31,6 +32,7 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
   const logo = campaign.brand?.logo_path ? urls[campaign.brand.logo_path] : undefined;
   const findHref = `/influencers?competitor_brand_id=${campaign.brand_id}&competitor_days=90`;
 
+  const products = await brandProducts(db, workspace.id, campaign.brand_id);
   return (
     <section className="space-y-4">
       <Link href="/campaigns" className="text-sm text-zinc-500 hover:underline">← Campaigns</Link>
@@ -62,7 +64,7 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
       </div>
 
       <CampaignTabs id={id} active="overview" />
-      <QuickAdd campaignId={id} defaultOpen={ov.deals.length === 0} />
+      <QuickAdd products={products} campaignId={id} defaultOpen={ov.deals.length === 0} />
 
       <MoneyCards fin={ov.fin} />
 
@@ -95,6 +97,7 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
                       <td className="py-1.5">
                         <Link href={`/campaigns/${id}/deals/${d.id}`} className="font-medium text-blue-700 underline decoration-blue-200 underline-offset-2 hover:decoration-blue-700">{d.influencer?.name ?? "–"}</Link>
                         <span className="ml-1 text-xs text-zinc-400">{d.influencer ? `@${d.influencer.handle} · ${compact(d.influencer.followers)}` : ""}</span>
+                        {d.product && <span className="ml-1 rounded bg-violet-50 px-1.5 py-0.5 text-[11px] text-violet-800">{d.product}</span>}
                       </td>
                       <td>{d.stage}</td>
                       {d.client_price === null && d.payout === null ? (

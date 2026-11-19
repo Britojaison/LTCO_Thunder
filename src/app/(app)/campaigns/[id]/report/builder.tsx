@@ -88,6 +88,13 @@ export function ReportBuilder({ data, templates, past, brandId }: { data: Report
           <p className="mt-2 text-xs text-zinc-400">Payouts, margins, internal notes and team ratings are never included.</p>
         </Panel>
 
+        <Panel title="Influencer details">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={config.showProduct} onChange={() => set("showProduct", !config.showProduct)} /> Show product
+          </label>
+          {!data.influencers.some((i) => i.product) && <p className="mt-1 text-xs text-zinc-400">No products entered for this campaign yet.</p>}
+        </Panel>
+
         <Panel title="Sections">
           {REPORT_SECTIONS.map((s) => (
             <label key={s} className="flex items-center gap-2 text-sm">
@@ -107,7 +114,8 @@ export function ReportBuilder({ data, templates, past, brandId }: { data: Report
         </Panel>
 
         <Panel title={`Influencers and posts (${data.influencers.length})`}>
-          {data.influencers.length === 0 && <p className="text-sm text-zinc-500">No influencers in this campaign.</p>}
+          <p className="mb-2 text-xs text-zinc-500">Only influencers at <strong>Confirmed</strong> or later (Content review, Posted, Data collected, Paid) are included.</p>
+          {data.influencers.length === 0 && <p className="text-sm text-zinc-500">No confirmed influencers yet. Move them to Confirmed in the pipeline.</p>}
           <ul className="space-y-1.5">
             {data.influencers.map((i) => {
               const off = config.excludedDeals.includes(i.deal_id);

@@ -13,21 +13,21 @@ const money = z.preprocess(
 const optDate = z.preprocess((v) => (v === "" || v === undefined ? null : v), z.iso.date().nullable());
 const count = z.coerce.number().int().min(0).max(1000).default(0);
 
-export type RateStats = Partial<Record<"reel" | "story" | "carousel" | "collab", { avg: number; deals: number }>> & { all?: { avg_payout: number; deals: number } };
+export type RateStats = Partial<Record<"reel" | "story" | "carousel" | "collab", { latest: number; on: string; deals: number }>> & { all?: { latest_payout: number; on: string; deals: number } };
 
 export const PAYMENT_STATUSES = ["pending", "partly_paid", "paid"] as const;
 export const CONTACT_CHANNELS = ["call", "whatsapp", "email", "instagram_dm", "other"] as const;
 
 export type DealRow = {
   id: string; stage_id: string | null; position: number; owner_id: string | null;
-  deliverables: { format: string; count: number }[];
+  deliverables: { format: string; count: number }[]; product: string | null;
   client_price: number | null; payout: number | null; margin: number | null; margin_pct: number | null;
   due_date: string | null; posting_date: string | null; payment_status: string; payment_due_date: string | null;
   influencer: { id: string; name: string; handle: string; followers: number | null; city: string | null } | undefined;
   owner: { full_name: string | null; email: string } | undefined;
 };
 
-const DEAL_LIST = `id, stage_id, position, owner_id, deliverables, client_price, payout, margin, margin_pct, due_date, posting_date,
+const DEAL_LIST = `id, stage_id, position, owner_id, deliverables, product, client_price, payout, margin, margin_pct, due_date, posting_date,
   payment_status, payment_due_date,
   influencer:influencers_thunder(id, name, handle, followers, city),
   owner:workspace_members_thunder(full_name, email)`;
@@ -72,11 +72,11 @@ export async function getDeal(db: Db, workspaceId: string, dealId: string) {
   if (!z.uuid().safeParse(dealId).success) throw new ServiceError("Deal not found", "not_found");
   const { data, error } = await db.from("deals_thunder")
     .select(`*, influencer:influencers_thunder(id, name, handle, followers, city, phone, whatsapp, email, rate_reel, rate_story, rate_carousel, rate_collab, rate_stats),
-      campaign:campaigns_thunder(id, name, deliverables, brand:brands_thunder(name))`)
+      campaign:campaigns_thunder(id, name, brand_id, deliverables, brand:brands_thunder(name))`)
     .eq("workspace_id", workspaceId).eq("id", dealId).is("deleted_at", null).maybeSingle();
   fromDb(error, "Loading deal");
   if (!data) throw new ServiceError("Deal not found", "not_found");
-  const campaign = one(data.campaign as unknown as { id: string; name: string; deliverables: unknown; brand: { name: string } | { name: string }[] });
+  const campaign = one(data.campaign as unknown as { id: string; name: string; brand_id: string; deliverables: unknown; brand: { name: string } | { name: string }[] });
   return {
     ...data,
     deliverables: z.array(z.object({ format: z.string(), count: z.number() })).catch([]).parse(data.deliverables),
@@ -86,13 +86,33 @@ export async function getDeal(db: Db, workspaceId: string, dealId: string) {
       rate_stats: RateStats;
     },
     campaign: campaign && {
-      id: campaign.id, name: campaign.name, brand: one(campaign.brand)?.name ?? "",
+      id: campaign.id, name: campaign.name, brand_id: campaign.brand_id, brand: one(campaign.brand)?.name ?? "",
       deliverables: z.array(z.object({ format: z.string(), count: z.number() })).catch([]).parse(campaign.deliverables),
     },
   };
 }
 
 // ── Updates ──────────────────────────────────────────────────
+const productField = z.preprocess(
+  (v) => (typeof v === "string" ? (v.trim() === "" ? null : v.trim().replace(/\s+/g, " ")) : v ?? null),
+  z.string().max(120, "Product name is too long").nullable(),
+);
+
+/** Products already used for this brand (suggestions). */
+export async function brandProducts(db: Db, workspaceId: string, brandId: string) {
+  const { data, error } = await db.from("brand_products_thunder").select("product").eq("workspace_id", workspaceId).eq("brand_id", brandId);
+  fromDb(error, "Loading products");
+  return [...new Set((data ?? []).map((r) => r.product as string))].sort((a, b) => a.localeCompare(b));
+}
+
+/** Inline edit from the campaign table. */
+export async function updateDealProduct(db: Db, workspaceId: string, dealId: string, product: unknown) {
+  const p = productField.safeParse(product);
+  if (!p.success) throw new ServiceError(p.error.issues[0].message, "validation");
+  const { error } = await db.from("deals_thunder").update({ product: p.data }).eq("workspace_id", workspaceId).eq("id", dealId);
+  fromDb(error, "Saving product");
+}
+
 export const dealInput = z.object({
   stage_id: z.uuid(),
   owner_id: z.preprocess((v) => (v === "" ? null : v), z.uuid().nullable()),
@@ -100,6 +120,7 @@ export const dealInput = z.object({
   client_price: money, payout: money, barter_value: money,
   due_date: optDate, posting_date: optDate,
   usage_rights_days: z.preprocess((v) => (v === "" || v === undefined ? null : Number(v)), z.number().int().min(0).max(3650).nullable()),
+  product: productField,
 });
 
 export async function updateDeal(db: Db, workspaceId: string, dealId: string, input: unknown) {
@@ -220,9 +241,9 @@ export function dealsToCsv(rows: DealRow[], stageName: (id: string | null) => st
     const safe = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s; // block spreadsheet formula injection
     return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
   };
-  const head = ["Influencer", "Handle", "Followers", "City", "Stage", "Owner", "Deliverables", "Cost to client", "Cost to agency", "Profit", "Profit %", "Due date", "Posting date", "Payment status", "Payment due"];
+  const head = ["Influencer", "Handle", "Followers", "City", "Product", "Stage", "Owner", "Deliverables", "Cost to client", "Cost to agency", "Profit", "Profit %", "Due date", "Posting date", "Payment status", "Payment due"];
   const lines = rows.map((d) => [
-    d.influencer?.name, d.influencer?.handle ? `@${d.influencer.handle}` : "", d.influencer?.followers, d.influencer?.city,
+    d.influencer?.name, d.influencer?.handle ? `@${d.influencer.handle}` : "", d.influencer?.followers, d.influencer?.city, d.product,
     stageName(d.stage_id), d.owner?.full_name || d.owner?.email, d.deliverables.map((x) => `${x.count} ${x.format}`).join("; "),
     d.client_price, d.payout, d.margin, d.margin_pct, d.due_date, d.posting_date, d.payment_status.replace("_", " "), d.payment_due_date,
   ].map(esc).join(","));

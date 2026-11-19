@@ -6,7 +6,7 @@ import { requireWorkspace } from "@/lib/auth";
 import { formToDefaults, formToObject } from "@/lib/form";
 import { ServiceError } from "@/lib/services/errors";
 import {
-  moveDeal, updateDeal, updatePayment, removeDeal, addContact,
+  moveDeal, updateDeal, updatePayment, removeDeal, addContact, updateDealProduct,
   createDealUpload, attachDealFile, detachDealFile,
 } from "@/lib/services/deals";
 import { addPost, deletePost, saveSnapshot, deleteSnapshot, createScreenshotUpload } from "@/lib/services/posts";
@@ -152,4 +152,15 @@ export async function startScreenshotUploadAction(postId: string, contentType: s
   } catch (e) {
     return { ok: false as const, error: message(e) };
   }
+}
+
+export async function updateProductAction(dealId: string, product: string): Promise<{ error?: string }> {
+  const { db, workspace } = await requireWorkspace();
+  try {
+    await updateDealProduct(db, workspace.id, dealId, product);
+  } catch (e) {
+    return { error: message(e) };
+  }
+  refresh();
+  return {};
 }

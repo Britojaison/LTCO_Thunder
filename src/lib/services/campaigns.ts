@@ -110,7 +110,7 @@ export async function campaignOverview(db: Db, workspaceId: string, id: string) 
     financialsFor(db, workspaceId, [id]),
     db.from("pipeline_stages_thunder").select("id, name, position, kind").eq("workspace_id", workspaceId).is("deleted_at", null).order("position"),
     db.from("deals_thunder")
-      .select("id, stage_id, client_price, payout, margin, margin_pct, posting_date, influencer:influencers_thunder(id, name, handle, followers), owner:workspace_members_thunder(full_name, email)")
+      .select("id, stage_id, product, client_price, payout, margin, margin_pct, posting_date, influencer:influencers_thunder(id, name, handle, followers), owner:workspace_members_thunder(full_name, email)")
       .eq("workspace_id", workspaceId).eq("campaign_id", id).is("deleted_at", null).order("created_at"),
   ]);
   fromDb(stages.error, "Loading stages");
@@ -128,6 +128,7 @@ export async function campaignOverview(db: Db, workspaceId: string, id: string) 
       dropped: stageName.get(d.stage_id)?.kind === "dropped",
       client_price: d.client_price as number | null, payout: d.payout as number | null,
       margin: d.margin as number | null, margin_pct: d.margin_pct as number | null,
+      product: d.product as string | null,
       posting_date: d.posting_date as string | null,
       influencer: one(d.influencer as unknown as { id: string; name: string; handle: string; followers: number | null } | null),
       owner: one(d.owner as unknown as { full_name: string | null; email: string } | null),
@@ -196,6 +197,7 @@ export const quickAddInput = z.object({
   niche_tags: z.string().optional(),
   client_price: z.string().optional(),
   payout: z.string().optional(),
+  product: z.string().trim().max(120).optional(),
 });
 
 export type QuickAddResult = { dealId: string; influencerName: string; handle: string; created: boolean; alreadyInCampaign: boolean };
@@ -246,6 +248,7 @@ export async function quickAddToCampaign(db: Db, workspaceId: string, userId: st
   const { data, error } = await db.from("deals_thunder").insert({
     workspace_id: workspaceId, campaign_id: campaignId, influencer_id: influencer.id,
     owner_id: userId, created_by: userId, client_price: clientPrice, payout,
+    product: v.product ? v.product.replace(/\s+/g, " ") : null,
   }).select("id").single();
   fromDb(error, "Adding to campaign");
   return { dealId: data!.id as string, influencerName: influencer.name, handle, created, alreadyInCampaign: false };

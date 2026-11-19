@@ -70,7 +70,7 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
               <th className="p-2 text-right">Followers</th>
               <th className="p-2 text-right">ER</th>
               <th className="p-2 text-right">Avg views</th>
-              <th className="p-2 text-right" title="Average of real deals, or quoted rate if none yet">Avg {rateFormat} rate</th>
+              <th className="p-2 text-right" title="Latest amount paid, or quoted rate if no deals yet">{cap(rateFormat)} rate</th>
             </tr>
           </thead>
           <tbody>

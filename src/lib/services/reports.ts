@@ -15,7 +15,7 @@ export type ReportSnapshot = Metrics & { snapshot_point: string; captured_at: st
 export type ReportPost = { post_id: string; url: string; format: string; posted_at: string | null; snapshots: ReportSnapshot[] };
 export type ReportInfluencer = {
   deal_id: string; name: string; handle: string; profile_url: string; followers: number | null; city: string | null;
-  client_price: number | null; deliverables: { format: string; count: number }[]; posts: ReportPost[];
+  client_price: number | null; deliverables: { format: string; count: number }[]; product: string | null; posts: ReportPost[];
 };
 export type ReportData = {
   agency: { name: string; logoUrl: string | null; color: string };
@@ -34,7 +34,7 @@ export async function loadReportData(db: Db, workspaceId: string, campaignId: st
     db.from("workspaces_thunder").select("name, logo_path, brand_colors").eq("id", workspaceId).single(),
     db.from("campaigns_thunder").select("id, name, start_date, end_date, brand:brands_thunder(name, logo_path)")
       .eq("workspace_id", workspaceId).eq("id", campaignId).is("deleted_at", null).maybeSingle(),
-    db.from("report_deals_thunder").select("deal_id, influencer_name, influencer_handle, profile_url, followers, city, client_price, deliverables")
+    db.from("report_deals_thunder").select("deal_id, influencer_name, influencer_handle, profile_url, followers, city, client_price, deliverables, product")
       .eq("workspace_id", workspaceId).eq("campaign_id", campaignId).order("influencer_name"),
     db.from("report_post_metrics_thunder").select("*").eq("workspace_id", workspaceId).eq("campaign_id", campaignId),
   ]);
@@ -75,7 +75,7 @@ export async function loadReportData(db: Db, workspaceId: string, campaignId: st
     influencers: (deals.data ?? []).map((d) => ({
       deal_id: d.deal_id, name: d.influencer_name, handle: d.influencer_handle, profile_url: d.profile_url,
       followers: d.followers, city: d.city, client_price: d.client_price === null ? null : Number(d.client_price),
-      deliverables: Array.isArray(d.deliverables) ? d.deliverables : [],
+      deliverables: Array.isArray(d.deliverables) ? d.deliverables : [], product: (d.product as string | null) ?? null,
       posts: [...posts.values()].filter((p) => dealOfPost.get(p.post_id) === d.deal_id)
         .sort((a, b) => (a.posted_at ?? "").localeCompare(b.posted_at ?? "")),
     })),

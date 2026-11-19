@@ -22,6 +22,7 @@ export const reportConfigSchema = z.object({
   metrics: z.array(z.enum(REPORT_METRICS)).default([...REPORT_METRICS]),
   snapshot: z.enum(REPORT_SNAPSHOTS).default("latest"),
   costs: z.enum(["client_price", "hidden"]).default("client_price"),
+  showProduct: z.boolean().default(true),
   excludedDeals: z.array(z.string()).default([]),
   excludedPosts: z.array(z.string()).default([]),
 });

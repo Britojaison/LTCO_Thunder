@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth";
 import { getCampaign } from "@/lib/services/campaigns";
-import { listDeals, listStages, listMembers } from "@/lib/services/deals";
+import { listDeals, listStages, listMembers, brandProducts } from "@/lib/services/deals";
+import { ProductCell } from "./product-cell";
 import { ServiceError } from "@/lib/services/errors";
 import { Badge, btnPrimary, btnSecondary, Card, inputCls } from "@/components/ui";
 import { compact, dateIN, inr } from "@/lib/format";
@@ -26,7 +27,9 @@ async function Table({ params, searchParams }: { params: PageProps<"/campaigns/[
     throw e;
   });
   const f = { stage: str(sp.stage), owner: str(sp.owner), payment: str(sp.payment) };
-  const [stages, members, deals] = await Promise.all([listStages(db, workspace.id), listMembers(db, workspace.id), listDeals(db, workspace.id, id, f)]);
+  const [stages, members, deals, products] = await Promise.all([
+    listStages(db, workspace.id), listMembers(db, workspace.id), listDeals(db, workspace.id, id, f), brandProducts(db, workspace.id, campaign.brand_id),
+  ]);
   const stageName = new Map(stages.map((s) => [s.id, s.name]));
   const query = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]).toString();
   const totals = deals.reduce((t, d) => ({ c: t.c + (d.client_price ?? 0), p: t.p + (d.payout ?? 0) }), { c: 0, p: 0 });
@@ -56,12 +59,13 @@ async function Table({ params, searchParams }: { params: PageProps<"/campaigns/[
         <a href={`/campaigns/${id}/deals/export${query ? `?${query}` : ""}`} className={btnPrimary}>Export CSV</a>
       </form>
 
+      <datalist id="table-products">{products.map((p) => <option key={p} value={p} />)}</datalist>
       {deals.length === 0 ? <Card><p className="text-sm text-zinc-600">No influencers match.</p></Card> : (
         <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
           <table className="w-full text-sm">
             <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500">
               <tr>
-                <th className="p-2">Influencer</th><th className="p-2">Stage</th><th className="p-2">Owner</th><th className="p-2">Deliverables</th>
+                <th className="p-2">Influencer</th><th className="p-2">Product</th><th className="p-2">Stage</th><th className="p-2">Owner</th><th className="p-2">Deliverables</th>
                 <th className="p-2 text-right">Cost to client</th><th className="p-2 text-right">Cost to agency</th><th className="p-2 text-right">Profit</th>
                 <th className="p-2 text-right">Profit %</th><th className="p-2">Posting</th><th className="p-2">Payment</th>
               </tr>
@@ -73,6 +77,7 @@ async function Table({ params, searchParams }: { params: PageProps<"/campaigns/[
                     <Link href={`/campaigns/${id}/deals/${d.id}`} className="font-medium text-blue-700 underline decoration-blue-200 underline-offset-2 hover:decoration-blue-700">{d.influencer?.name}</Link>
                     <div className="text-xs text-zinc-500">@{d.influencer?.handle} · {compact(d.influencer?.followers)}</div>
                   </td>
+                  <td className="p-2"><ProductCell dealId={d.id} value={d.product} listId="table-products" /></td>
                   <td className="p-2">{stageName.get(d.stage_id ?? "") ?? "–"}</td>
                   <td className="p-2 text-zinc-600">{d.owner?.full_name || d.owner?.email || "–"}</td>
                   <td className="p-2 text-zinc-600">{d.deliverables.map((x) => `${x.count} ${x.format}`).join(", ") || "–"}</td>
@@ -87,7 +92,7 @@ async function Table({ params, searchParams }: { params: PageProps<"/campaigns/[
             </tbody>
             <tfoot className="bg-zinc-50 font-medium">
               <tr>
-                <td className="p-2" colSpan={4}>Total ({deals.length})</td>
+                <td className="p-2" colSpan={5}>Total ({deals.length})</td>
                 <td className="p-2 text-right tabular-nums">{inr(totals.c)}</td>
                 <td className="p-2 text-right tabular-nums">{inr(totals.p)}</td>
                 <td className="p-2 text-right tabular-nums">{inr(totals.c - totals.p)}</td>

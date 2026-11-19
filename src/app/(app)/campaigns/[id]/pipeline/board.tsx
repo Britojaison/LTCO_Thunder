@@ -70,6 +70,7 @@ export function Board({ campaignId, stages, deals }: { campaignId: string; stage
                       </span>
                     </div>
                     <p className="text-xs text-zinc-500">@{d.influencer?.handle} · {compact(d.influencer?.followers)}</p>
+                    {d.product && <p className="mt-1 inline-block rounded bg-violet-50 px-1.5 py-0.5 text-[11px] text-violet-800">{d.product}</p>}
                     {d.deliverables.length > 0 && (
                       <p className="mt-1 text-xs text-zinc-600">{d.deliverables.map((x) => `${x.count} ${x.format}`).join(", ")}</p>
                     )}

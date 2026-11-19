@@ -15,6 +15,12 @@ const fmtInr = (n: number | null | undefined, dp = 0) =>
 const fmtDate = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
 
+const shortUrl = (u: string) => u.replace(/^https?:\/\/(www\.)?instagram\.com\//, "instagram.com/").replace(/\/$/, "");
+
+function Handle({ handle, url, className = "" }: { handle: string; url: string; className?: string }) {
+  return <a href={url} target="_blank" rel="noreferrer" className={`text-zinc-500 underline decoration-zinc-300 underline-offset-2 ${className}`}>@{handle}</a>;
+}
+
 export function pickSnapshot(post: ReportPost, point: ReportConfig["snapshot"]): ReportSnapshot | null {
   if (point === "latest") return post.snapshots.reduce<ReportSnapshot | null>((b, s) => (!b || s.captured_at >= b.captured_at ? s : b), null);
   return post.snapshots.find((s) => s.snapshot_point === point) ?? null;
@@ -78,6 +84,7 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
   const allPosts = influencers.flatMap((i) => i.posts.map((p) => ({ ...p, influencer: i })));
   const topPosts = allPosts.filter((p) => p.snap).sort((a, b) => (b.snap!.views ?? 0) - (a.snap!.views ?? 0)).slice(0, 5);
   const topCols = metrics.filter((m) => !m.startsWith("cost") && hasData(m, topPosts.map((p) => ({ m: p.snap!, price: null })))).slice(0, 5);
+  const showProduct = config.showProduct && influencers.some((i) => i.product);
   const accent = { color: data.agency.color };
   const accentBg = { backgroundColor: data.agency.color };
 
@@ -135,8 +142,8 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
               {topPosts.map((p, i) => (
                 <tr key={p.post.post_id} className="border-b border-zinc-100">
                   <td className="py-2 font-semibold" style={accent}>{i + 1}</td>
-                  <td>{p.influencer.name}<div className="text-xs text-zinc-500">@{p.influencer.handle}</div></td>
-                  <td className="text-xs"><a href={p.post.url} className="text-zinc-600 underline">{p.post.format}</a> · {fmtDate(p.post.posted_at)}</td>
+                  <td>{p.influencer.name}<div className="text-xs"><Handle handle={p.influencer.handle} url={p.influencer.profile_url} /></div>{showProduct && p.influencer.product && <div className="text-[10px] text-zinc-600">{p.influencer.product}</div>}</td>
+                  <td className="text-xs"><a href={p.post.url} target="_blank" rel="noreferrer" className="text-blue-700 underline">{shortUrl(p.post.url)}</a><div className="text-zinc-500">{p.post.format} · {fmtDate(p.post.posted_at)}</div></td>
                   {topCols.map((m) => <td key={m} className="whitespace-nowrap px-1 text-right tabular-nums">{value(m, p.snap!, null)}</td>)}
                 </tr>
               ))}
@@ -155,7 +162,8 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
             {groups.map((group, gi) => (
               <table key={gi} className={`w-full border-collapse text-[11px] ${gi > 0 ? "mt-6" : ""}`}>
                 <thead><tr className="border-b-2 border-zinc-200 text-left text-[10px] text-zinc-500">
-                  <th className="w-[34%] py-2">Influencer</th>
+                  <th className="w-[30%] py-2">Influencer</th>
+                  {gi === 0 && showProduct && <th className="px-1 text-left">Product</th>}
                   {gi === 0 && showFollowers && <th className="whitespace-nowrap px-1 text-right">Followers</th>}
                   {gi === 0 && <th className="whitespace-nowrap px-1 text-right">Posts</th>}
                   {gi === 0 && showCost && <th className="whitespace-nowrap px-1 text-right">Investment</th>}
@@ -164,7 +172,20 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
                 <tbody>
                   {influencers.map((i) => (
                     <tr key={i.deal_id} className="border-b border-zinc-100 align-top">
-                      <td className="py-1.5 pr-2">{i.name}<div className="text-[10px] text-zinc-500">@{i.handle}</div></td>
+                      <td className="py-1.5 pr-2">
+                        {i.name}
+                        <div className="text-[10px]"><Handle handle={i.handle} url={i.profile_url} /></div>
+                        {gi === 0 && i.posts.length > 0 && (
+                          <div className="mt-0.5 flex flex-wrap gap-x-2 text-[10px]">
+                            {i.posts.map((p, n) => (
+                              <a key={p.post.post_id} href={p.post.url} target="_blank" rel="noreferrer" className="text-blue-700 underline">
+                                {i.posts.length > 1 ? `Post ${n + 1}` : "View post"} ↗
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                      {gi === 0 && showProduct && <td className="px-1 text-left">{i.product ?? "–"}</td>}
                       {gi === 0 && showFollowers && <td className="whitespace-nowrap px-1 text-right tabular-nums">{fmtNum(i.followers)}</td>}
                       {gi === 0 && <td className="whitespace-nowrap px-1 text-right tabular-nums">{i.posts.length}</td>}
                       {gi === 0 && showCost && <td className="whitespace-nowrap px-1 text-right tabular-nums">{fmtInr(i.client_price)}</td>}
@@ -174,6 +195,7 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
                 </tbody>
                 <tfoot><tr className="border-t-2 border-zinc-200 font-semibold">
                   <td className="py-1.5">Total</td>
+                  {gi === 0 && showProduct && <td />}
                   {gi === 0 && showFollowers && <td />}
                   {gi === 0 && <td className="px-1 text-right">{allPosts.length}</td>}
                   {gi === 0 && showCost && <td className="whitespace-nowrap px-1 text-right tabular-nums">{fmtInr(totalCost)}</td>}
@@ -194,17 +216,17 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
             <h2 className="mb-4 text-xl font-semibold" style={accent}>Post-by-post detail</h2>
             {influencers.filter((i) => i.posts.length).map((i) => (
               <div key={i.deal_id} className="mb-5 break-inside-avoid">
-                <h3 className="font-semibold">{i.name} <span className="font-normal text-zinc-500">@{i.handle}</span></h3>
+                <h3 className="font-semibold">{i.name} <Handle handle={i.handle} url={i.profile_url} className="font-normal" />{showProduct && i.product && <span className="font-normal text-zinc-600"> · {i.product}</span>}</h3>
                 {groups.map((group, gi) => (
                   <table key={gi} className="mt-1 w-full border-collapse text-[11px]">
                     <thead><tr className="border-b border-zinc-200 text-left text-[10px] text-zinc-500">
-                      <th className="w-[22%] py-1">Post</th><th className="w-[16%]">Posted</th>
+                      <th className="w-[34%] py-1">Post</th><th className="w-[14%]">Posted</th>
                       {group.map((m) => <th key={m} className="whitespace-nowrap px-1 text-right">{label(m)}</th>)}
                     </tr></thead>
                     <tbody>
                       {i.posts.map((p) => (
                         <tr key={p.post.post_id} className="border-b border-zinc-100">
-                          <td className="py-1"><a href={p.post.url} className="underline">{p.post.format}</a></td>
+                          <td className="py-1 pr-2"><a href={p.post.url} target="_blank" rel="noreferrer" className="break-all text-blue-700 underline">{shortUrl(p.post.url)}</a><div className="text-[10px] text-zinc-500">{p.post.format}</div></td>
                           <td className="whitespace-nowrap">{fmtDate(p.post.posted_at)}</td>
                           {group.map((m) => <td key={m} className="whitespace-nowrap px-1 text-right tabular-nums">{p.snap ? value(m, p.snap, null) : "–"}</td>)}
                         </tr>
@@ -227,7 +249,7 @@ export function ReportDocument({ data, config }: { data: ReportData; config: Rep
             if (!shots.length) return null;
             return (
               <div key={i.deal_id} className="mb-5 break-inside-avoid">
-                <h3 className="mb-2 font-semibold">{i.name} <span className="font-normal text-zinc-500">@{i.handle}</span></h3>
+                <h3 className="mb-2 font-semibold">{i.name} <Handle handle={i.handle} url={i.profile_url} className="font-normal" /></h3>
                 <div className="grid grid-cols-4 gap-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {shots.map((u) => <img key={u} src={u} alt="" className="w-full rounded border border-zinc-200" />)}
