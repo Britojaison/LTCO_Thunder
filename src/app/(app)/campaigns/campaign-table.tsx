@@ -18,6 +18,7 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
           <tr>
             <th className="p-2">Campaign</th>
             {showBrand && <th className="p-2">Brand</th>}
+            <th className="p-2">POC</th>
             <th className="p-2">Status</th>
             <th className="p-2">Dates</th>
             <th className="p-2 text-right">Influencers</th>
@@ -32,6 +33,7 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
             <tr key={c.id} className="border-b border-zinc-100">
               <td className="p-2"><Link href={`/campaigns/${c.id}`} className="font-medium hover:underline">{c.name}</Link></td>
               {showBrand && <td className="p-2 text-zinc-600"><Link href={`/brands/${c.brand_id}`} className="hover:underline">{c.brand}</Link></td>}
+              <td className="whitespace-nowrap p-2 text-zinc-600">{c.poc ?? <span className="text-amber-700">Not set</span>}</td>
               <td className="p-2"><StatusBadge status={c.status} /></td>
               <td className="whitespace-nowrap p-2 text-zinc-600">{c.start_date ? `${dateIN(c.start_date)} – ${dateIN(c.end_date)}` : "–"}</td>
               <td className="p-2 text-right tabular-nums">{c.fin.influencer_count}</td>
@@ -56,7 +58,7 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
         {campaigns.length > 1 && (
           <tfoot className="bg-zinc-50 font-medium">
             <tr>
-              <td className="p-2" colSpan={showBrand ? 4 : 3}>Total</td>
+              <td className="p-2" colSpan={showBrand ? 5 : 4}>Total</td>
               <td className="p-2 text-right tabular-nums">{total.n}</td>
               <td className="p-2 text-right tabular-nums">{inr(total.client)}</td>
               <td className="p-2 text-right tabular-nums">{inr(total.agency)}</td>

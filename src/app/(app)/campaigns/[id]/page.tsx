@@ -2,18 +2,19 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth";
-import { getCampaign, campaignOverview } from "@/lib/services/campaigns";
+import { getCampaign, campaignOverview, campaignActivity, memberName } from "@/lib/services/campaigns";
+import { listMembers } from "@/lib/services/team";
 import { signedUrls } from "@/lib/services/storage";
 import { ServiceError } from "@/lib/services/errors";
 import { btnPrimary, btnSecondary, Card, inputCls } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
 import { MoneyCards } from "@/components/money";
-import { cap, compact, dateIN, inr } from "@/lib/format";
+import { cap, compact, dateIN, dateTimeIN, inr } from "@/lib/format";
 import { StatusBadge } from "../status-badge";
 import { CampaignTabs } from "../campaign-tabs";
 import { brandProducts } from "@/lib/services/deals";
 import { QuickAdd } from "../quick-add";
-import { deleteCampaignAction, setStatusAction } from "../actions";
+import { deleteCampaignAction, setPocAction, setStatusAction } from "../actions";
 
 export const metadata = { title: "Campaign" };
 
@@ -28,7 +29,10 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
     if (e instanceof ServiceError && e.code === "not_found") notFound();
     throw e;
   });
-  const [ov, urls] = await Promise.all([campaignOverview(db, workspace.id, id), signedUrls(db, [campaign.brand?.logo_path])]);
+  const [ov, urls, team, activity] = await Promise.all([
+    campaignOverview(db, workspace.id, id), signedUrls(db, [campaign.brand?.logo_path]),
+    listMembers(db, workspace.id), campaignActivity(db, workspace.id, id),
+  ]);
   const logo = campaign.brand?.logo_path ? urls[campaign.brand.logo_path] : undefined;
   const findHref = `/influencers?competitor_brand_id=${campaign.brand_id}&competitor_days=90`;
 
@@ -46,10 +50,21 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
           <div>
             <Link href={`/brands/${campaign.brand_id}`} className="text-sm text-zinc-500 hover:underline">{campaign.brand?.name}</Link>
             <h1 className="flex items-center gap-2 text-2xl font-semibold">{campaign.name} <StatusBadge status={campaign.status} /></h1>
-            <p className="text-sm text-zinc-500">{campaign.start_date ? `${dateIN(campaign.start_date)} – ${dateIN(campaign.end_date)}` : "No dates set"}</p>
+            <p className="text-sm text-zinc-500">
+              {campaign.start_date ? `${dateIN(campaign.start_date)} – ${dateIN(campaign.end_date)}` : "No dates set"}
+              {" · POC: "}{campaign.poc ? <span className="font-medium text-zinc-700">{campaign.poc}</span> : <span className="text-amber-700">not set</span>}
+            </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <form action={setPocAction.bind(null, id)} className="flex items-center gap-1">
+            <label htmlFor="poc" className="text-xs text-zinc-500">POC</label>
+            <select id="poc" name="poc_id" defaultValue={campaign.poc_id ?? ""} className={`${inputCls} w-auto py-1.5`}>
+              <option value="">Not set</option>
+              {team.map((m) => <option key={m.user_id} value={m.user_id}>{memberName(m)}</option>)}
+            </select>
+            <button className={btnSecondary}>Set</button>
+          </form>
           <form action={setStatusAction.bind(null, id)} className="flex gap-1">
             <select name="status" defaultValue={campaign.status} className={`${inputCls} w-auto py-1.5`}>
               <option value="planning">Planning</option><option value="live">Live</option>
@@ -131,6 +146,21 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
           </dl>
         </Card>
       </div>
+
+      <Card title="Activity">
+        {activity.length === 0 ? (
+          <p className="text-sm text-zinc-500">No activity recorded yet.</p>
+        ) : (
+          <ol className="space-y-1.5 text-sm">
+            {activity.map((a, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="w-32 shrink-0 text-xs tabular-nums text-zinc-400">{dateTimeIN(a.at)}</span>
+                <span><span className="font-medium">{a.who}</span> {a.text}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Card>
     </section>
   );
 }

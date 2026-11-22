@@ -13,7 +13,7 @@ export function BriefSearchForm({ initial, enabled }: { initial?: string; enable
         name="brief"
         defaultValue={value}
         disabled={!enabled}
-        placeholder={enabled ? "Describe the brief: “Tamil mom creators in Coimbatore, 20k–100k, under ₹10k a reel”" : "Brief search needs ANTHROPIC_API_KEY in .env.local"}
+        placeholder={enabled ? "Describe the brief: “Tamil mom creators in Coimbatore, 20k–100k, under ₹10k a reel”" : "Brief search needs ANTHROPIC_API_KEY in the environment variables"}
         className={`${inputCls} flex-1`}
       />
       <button disabled={!enabled || pending} className={btnPrimary}>{pending ? "Reading brief…" : "Find matches"}</button>

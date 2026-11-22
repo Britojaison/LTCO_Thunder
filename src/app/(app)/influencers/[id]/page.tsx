@@ -8,6 +8,7 @@ import { Badge, btnSecondary, Card, FitScore } from "@/components/ui";
 import { cap, compact, dateIN, inr, pct } from "@/lib/format";
 import { removePromoAction } from "../actions";
 import { AddPromoForm, BlacklistControl, DeleteControl } from "./profile-actions";
+import { RefreshProfileButton } from "@/components/instagram";
 
 export const metadata = { title: "Influencer" };
 
@@ -73,6 +74,7 @@ async function Profile({ params }: { params: PageProps<"/influencers/[id]">["par
           <Row label="Avg reel views">{compact(inf.avg_reel_views)}</Row>
           <Row label="Engagement rate">{pct(inf.engagement_rate)}</Row>
           <Row label="Followers updated">{dateIN(inf.followers_updated_at ?? inf.updated_at)}</Row>
+          {!deleted && <div className="pt-2"><RefreshProfileButton id={id} /></div>}
         </Card>
         <Card title="Rates (latest paid)">
           {(["reel", "story", "carousel", "collab"] as const).map((f) => {

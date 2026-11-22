@@ -11,3 +11,7 @@ export const cap = (s: string | null | undefined) => (s ? s.charAt(0).toUpperCas
 
 export const dateIN = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "–";
+
+/** "20 Nov, 4:21 pm" in Indian time. */
+export const dateTimeIN = (d: string | null | undefined) =>
+  d ? new Date(d).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) : "–";

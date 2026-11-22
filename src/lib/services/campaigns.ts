@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Db } from "@/lib/supabase/server";
 import { ServiceError, fromDb } from "./errors";
 import { createInfluencer, findByHandle, normalizeHandle } from "./influencers";
+import { memberDirectory, personLabel } from "./team";
 
 /** Campaign services. Money is calculated from deals (campaign_financials_thunder view). */
 
@@ -28,6 +29,7 @@ export const campaignInput = z
     start_date: optDate,
     end_date: optDate,
     status: z.enum(CAMPAIGN_STATUSES).default("planning"),
+    poc_id: z.preprocess((v) => (v === "" || v === undefined ? null : v), z.uuid("Choose a POC").nullable()),
     deliv_reel: z.coerce.number().int().min(0).max(1000).default(0),
     deliv_story: z.coerce.number().int().min(0).max(1000).default(0),
     deliv_carousel: z.coerce.number().int().min(0).max(1000).default(0),
@@ -58,14 +60,19 @@ async function financialsFor(db: Db, workspaceId: string, ids: string[]) {
   }]));
 }
 
-export async function listCampaigns(db: Db, workspaceId: string, opts: { status?: string; brandId?: string } = {}) {
+export type Member = { full_name: string | null; email: string };
+export const memberName = (m: Member | null | undefined) => (m ? m.full_name || m.email.split("@")[0] : null);
+
+export async function listCampaigns(db: Db, workspaceId: string, opts: { status?: string; brandId?: string; pocId?: string } = {}) {
   let q = db.from("campaigns_thunder")
-    .select("id, name, status, start_date, end_date, brand_id, brand:brands_thunder(name)")
+    .select("id, name, status, start_date, end_date, brand_id, poc_id, brand:brands_thunder(name, logo_path), poc:workspace_members_thunder(full_name, email)")
     .eq("workspace_id", workspaceId).is("deleted_at", null)
     .order("start_date", { ascending: false, nullsFirst: true }).order("created_at", { ascending: false });
   if (opts.status && (CAMPAIGN_STATUSES as readonly string[]).includes(opts.status)) q = q.eq("status", opts.status);
   else if (opts.status !== "all") q = q.neq("status", "archived");
   if (opts.brandId && z.uuid().safeParse(opts.brandId).success) q = q.eq("brand_id", opts.brandId);
+  if (opts.pocId === "none") q = q.is("poc_id", null);
+  else if (opts.pocId && z.uuid().safeParse(opts.pocId).success) q = q.eq("poc_id", opts.pocId);
   const { data, error } = await q;
   fromDb(error, "Loading campaigns");
   const fin = await financialsFor(db, workspaceId, (data ?? []).map((c) => c.id));
@@ -73,6 +80,9 @@ export async function listCampaigns(db: Db, workspaceId: string, opts: { status?
     id: c.id as string, name: c.name as string, status: c.status as CampaignStatus,
     start_date: c.start_date as string | null, end_date: c.end_date as string | null, brand_id: c.brand_id as string,
     brand: one(c.brand as { name: string } | { name: string }[])?.name ?? "",
+    brand_logo: one(c.brand as unknown as { logo_path: string | null } | { logo_path: string | null }[])?.logo_path ?? null,
+    poc_id: c.poc_id as string | null,
+    poc: memberName(one(c.poc as unknown as Member | Member[])),
     fin: fin.get(c.id) ?? EMPTY_FIN,
   }));
 }
@@ -90,7 +100,7 @@ export async function listOpenCampaigns(db: Db, workspaceId: string) {
 export async function getCampaign(db: Db, workspaceId: string, id: string) {
   if (!z.uuid().safeParse(id).success) throw new ServiceError("Campaign not found", "not_found");
   const { data, error } = await db.from("campaigns_thunder")
-    .select("*, brand:brands_thunder(id, name, logo_path, competitor_brands)")
+    .select("*, brand:brands_thunder(id, name, logo_path, competitor_brands), poc:workspace_members_thunder(full_name, email)")
     .eq("workspace_id", workspaceId).eq("id", id).is("deleted_at", null).maybeSingle();
   fromDb(error, "Loading campaign");
   if (!data) throw new ServiceError("Campaign not found", "not_found");
@@ -100,6 +110,8 @@ export async function getCampaign(db: Db, workspaceId: string, id: string) {
     brief: data.brief as string | null, objective: data.objective as string | null,
     start_date: data.start_date as string | null, end_date: data.end_date as string | null,
     status: data.status as CampaignStatus, deliverables,
+    poc_id: data.poc_id as string | null, poc: memberName(one(data.poc as unknown as Member | Member[])),
+    created_by: data.created_by as string | null, created_at: data.created_at as string,
     brand: one(data.brand as unknown as { id: string; name: string; logo_path: string | null; competitor_brands: string[] }),
   };
 }
@@ -138,8 +150,9 @@ export async function campaignOverview(db: Db, workspaceId: string, id: string) 
 
 export async function createCampaign(db: Db, workspaceId: string, userId: string, input: unknown) {
   const values = parse(input);
-  const { data, error } = await db.from("campaigns_thunder").insert({ ...values, workspace_id: workspaceId, created_by: userId }).select("id").single();
-  if (error?.code === "23503") throw new ServiceError("Choose a valid brand.", "validation");
+  const { data, error } = await db.from("campaigns_thunder")
+    .insert({ ...values, poc_id: values.poc_id ?? userId, workspace_id: workspaceId, created_by: userId }).select("id").single();
+  if (error?.code === "23503") throw new ServiceError(/poc/.test(error.message) ? "The POC must be a member of your team." : "Choose a valid brand.", "validation");
   fromDb(error, "Saving campaign");
   return data!.id as string;
 }
@@ -147,7 +160,85 @@ export async function createCampaign(db: Db, workspaceId: string, userId: string
 export async function updateCampaign(db: Db, workspaceId: string, id: string, input: unknown) {
   const values = parse(input);
   const { error } = await db.from("campaigns_thunder").update(values).eq("workspace_id", workspaceId).eq("id", id);
+  if (error?.code === "23503") throw new ServiceError(/poc/.test(error.message) ? "The POC must be a member of your team." : "Choose a valid brand.", "validation");
   fromDb(error, "Updating campaign");
+}
+
+export async function setCampaignPoc(db: Db, workspaceId: string, id: string, pocId: string) {
+  const poc = pocId === "" ? null : pocId;
+  if (poc !== null && !z.uuid().safeParse(poc).success) throw new ServiceError("Choose a POC", "validation");
+  const { error } = await db.from("campaigns_thunder").update({ poc_id: poc }).eq("workspace_id", workspaceId).eq("id", id);
+  if (error?.code === "23503") throw new ServiceError("The POC must be a member of your team.", "validation");
+  fromDb(error, "Updating POC");
+}
+
+// ── Activity: who did what on this campaign (from activity_log_thunder) ──
+export type ActivityItem = { at: string; who: string; text: string };
+
+const FIELD_LABELS: Record<string, string> = {
+  name: "name", brief: "brief", objective: "objective", start_date: "start date", end_date: "end date",
+  deliverables: "deliverables", brand_id: "brand",
+};
+type LogRow = { at: string; actor_id: string | null; action: string; table_name: string; record_id: string; before: Record<string, unknown> | null; after: Record<string, unknown> | null };
+
+export async function campaignActivity(db: Db, workspaceId: string, id: string, limit = 40): Promise<ActivityItem[]> {
+  const cols = "at, actor_id, action, table_name, record_id, before, after";
+  const [camp, deals, dir, stages] = await Promise.all([
+    db.from("activity_log_thunder").select(cols).eq("workspace_id", workspaceId).eq("table_name", "campaigns_thunder").eq("record_id", id).order("at", { ascending: false }).limit(limit),
+    db.from("activity_log_thunder").select(cols).eq("workspace_id", workspaceId).eq("table_name", "deals_thunder").eq("after->>campaign_id", id).order("at", { ascending: false }).limit(limit * 3),
+    memberDirectory(db, workspaceId),
+    db.from("pipeline_stages_thunder").select("id, name").eq("workspace_id", workspaceId),
+  ]);
+  fromDb(camp.error ?? deals.error, "Loading activity");
+  const stage = new Map((stages.data ?? []).map((st) => [st.id as string, st.name as string]));
+  const rows = [...((camp.data ?? []) as LogRow[]), ...((deals.data ?? []) as LogRow[])];
+
+  const inflIds = [...new Set(rows.filter((r) => r.table_name === "deals_thunder").map((r) => String((r.after ?? r.before)?.influencer_id ?? "")).filter(Boolean))];
+  const infl = inflIds.length ? await db.from("influencers_thunder").select("id, handle").in("id", inflIds) : { data: [] as { id: string; handle: string }[] };
+  const handle = new Map((infl.data ?? []).map((i) => [i.id, `@${i.handle}`]));
+  const person = (uid: unknown) => personLabel(dir, uid);
+  // A POC/owner cleared because that person was removed from the team.
+  const leftTeam = (uid: unknown) => Boolean(uid) && dir.get(String(uid))?.current === false;
+
+  const items: ActivityItem[] = [];
+  for (const r of rows) {
+    const b = r.before ?? {}, a = r.after ?? {};
+    const changed = (k: string) => JSON.stringify(b[k] ?? null) !== JSON.stringify(a[k] ?? null);
+    const lines: string[] = [];
+    if (r.table_name === "campaigns_thunder") {
+      if (r.action === "insert") lines.push("created the campaign");
+      else if (r.action === "delete") lines.push("deleted the campaign");
+      else if (r.action === "restore") lines.push("restored the campaign");
+      else {
+        if (changed("poc_id")) {
+          if (a.poc_id) lines.push(`made ${person(a.poc_id)} the POC${b.poc_id ? ` (was ${person(b.poc_id)})` : ""}`);
+          else if (leftTeam(b.poc_id)) lines.push(`removed ${person(b.poc_id).replace(" (removed)", "")} from the team, so this campaign has no POC`);
+          else lines.push(`removed ${person(b.poc_id)} as POC`);
+        }
+        if (changed("status")) lines.push(`set status to ${String(a.status)}`);
+        const edited = Object.keys(FIELD_LABELS).filter(changed).map((k) => FIELD_LABELS[k]);
+        if (edited.length) lines.push(`edited ${edited.join(", ")}`);
+      }
+    } else {
+      const h = handle.get(String(a.influencer_id ?? b.influencer_id)) ?? "an influencer";
+      if (r.action === "insert") lines.push(`added ${h}`);
+      else if (r.action === "delete") lines.push(`removed ${h}`);
+      else if (r.action === "restore") lines.push(`restored ${h}`);
+      else {
+        if (changed("stage_id")) lines.push(`moved ${h} to ${stage.get(String(a.stage_id)) ?? "another stage"}`);
+        if (changed("client_price") || changed("payout")) lines.push(`updated pricing for ${h}`);
+        if (changed("payment_status")) lines.push(`marked ${h} payment ${String(a.payment_status).replace("_", " ")}`);
+        if (changed("product")) lines.push(`set product for ${h}${a.product ? ` to ${String(a.product)}` : ""}`);
+        if (changed("owner_id")) {
+          if (a.owner_id) lines.push(`assigned ${h} to ${person(a.owner_id)}`);
+          else if (leftTeam(b.owner_id)) lines.push(`removed ${person(b.owner_id).replace(" (removed)", "")} from the team, so ${h} has no owner`);
+          else lines.push(`unassigned ${h}`);
+        }
+      }
+    }
+    for (const text of lines) items.push({ at: r.at, who: person(r.actor_id), text });
+  }
+  return items.sort((x, y) => (x.at < y.at ? 1 : -1)).slice(0, limit);
 }
 
 export async function setCampaignStatus(db: Db, workspaceId: string, id: string, status: string) {
@@ -162,7 +253,7 @@ export async function deleteCampaign(db: Db, workspaceId: string, id: string) {
 }
 
 /** Adds influencers to a campaign pipeline as Shortlisted. Skips anyone already in it. */
-export async function addInfluencersToCampaign(db: Db, workspaceId: string, userId: string, campaignId: string, influencerIds: string[]) {
+export async function addInfluencersToCampaign(db: Db, workspaceId: string, userId: string, campaignId: string, influencerIds: string[], copyFrom?: string) {
   const ids = [...new Set(influencerIds)].slice(0, 200);
   if (ids.length === 0) throw new ServiceError("Select at least one influencer.", "validation");
   const { data: existing, error: e1 } = await db.from("deals_thunder").select("influencer_id")
@@ -171,8 +262,23 @@ export async function addInfluencersToCampaign(db: Db, workspaceId: string, user
   const already = new Set((existing ?? []).map((d) => d.influencer_id as string));
   const toAdd = ids.filter((id) => !already.has(id));
   if (toAdd.length) {
+    // Optionally carry over price, payout, product and deliverables from a previous campaign's deal.
+    const src = new Map<string, Record<string, unknown>>();
+    if (copyFrom) {
+      if (!z.uuid().safeParse(copyFrom).success || copyFrom === campaignId) throw new ServiceError("Choose a previous campaign", "validation");
+      const { data, error } = await db.from("deals_thunder").select("influencer_id, client_price, payout, product, deliverables")
+        .eq("workspace_id", workspaceId).eq("campaign_id", copyFrom).is("deleted_at", null).in("influencer_id", toAdd);
+      fromDb(error, "Loading previous deals");
+      for (const d of data ?? []) src.set(d.influencer_id as string, d);
+    }
     const { error } = await db.from("deals_thunder").insert(
-      toAdd.map((influencer_id) => ({ workspace_id: workspaceId, campaign_id: campaignId, influencer_id, owner_id: userId, created_by: userId })),
+      toAdd.map((influencer_id) => {
+        const d = src.get(influencer_id);
+        return {
+          workspace_id: workspaceId, campaign_id: campaignId, influencer_id, owner_id: userId, created_by: userId,
+          ...(d ? { client_price: d.client_price, payout: d.payout, product: d.product, deliverables: d.deliverables ?? [] } : {}),
+        };
+      }),
     );
     fromDb(error, "Adding to campaign");
   }
@@ -252,4 +358,93 @@ export async function quickAddToCampaign(db: Db, workspaceId: string, userId: st
   }).select("id").single();
   fromDb(error, "Adding to campaign");
   return { dealId: data!.id as string, influencerName: influencer.name, handle, created, alreadyInCampaign: false };
+}
+
+// ── Add from a previous campaign ─────────────────────────────
+export type PreviousCampaign = { id: string; name: string; brand: string; sameBrand: boolean; start_date: string | null; count: number };
+
+/** Other campaigns that have influencers, this brand's first, newest first. */
+export async function previousCampaigns(db: Db, workspaceId: string, currentId: string, brandId: string): Promise<PreviousCampaign[]> {
+  const { data, error } = await db.from("campaigns_thunder")
+    .select("id, name, brand_id, start_date, created_at, brand:brands_thunder(name)")
+    .eq("workspace_id", workspaceId).is("deleted_at", null).neq("id", currentId)
+    .order("start_date", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(300);
+  fromDb(error, "Loading campaigns");
+  const fin = await financialsFor(db, workspaceId, (data ?? []).map((c) => c.id));
+  const list = (data ?? []).map((c) => ({
+    id: c.id as string, name: c.name as string, start_date: c.start_date as string | null,
+    brand: one(c.brand as { name: string } | { name: string }[])?.name ?? "", sameBrand: c.brand_id === brandId,
+    count: fin.get(c.id)?.influencer_count ?? 0,
+  })).filter((c) => c.count > 0);
+  return [...list.filter((c) => c.sameBrand), ...list.filter((c) => !c.sameBrand)];
+}
+
+export type PreviousRow = {
+  influencer: { id: string; name: string; handle: string; followers: number | null; is_blacklisted: boolean };
+  stage: string; dropped: boolean; product: string | null;
+  client_price: number | null; payout: number | null; views: number | null; posts: number;
+};
+
+/** Influencers in a previous campaign with how it went: stage reached, price, payout, views. */
+export async function previousCampaignInfluencers(db: Db, workspaceId: string, sourceId: string): Promise<PreviousRow[]> {
+  if (!z.uuid().safeParse(sourceId).success) return [];
+  const [deals, stages] = await Promise.all([
+    db.from("deals_thunder")
+      .select("id, stage_id, product, client_price, payout, influencer:influencers_thunder(id, name, handle, followers, is_blacklisted, deleted_at)")
+      .eq("workspace_id", workspaceId).eq("campaign_id", sourceId).is("deleted_at", null).order("created_at"),
+    db.from("pipeline_stages_thunder").select("id, name, kind").eq("workspace_id", workspaceId),
+  ]);
+  fromDb(deals.error ?? stages.error, "Loading previous campaign");
+  const stage = new Map((stages.data ?? []).map((st) => [st.id as string, st]));
+  const dealIds = (deals.data ?? []).map((d) => d.id as string);
+  const posts = dealIds.length
+    ? await db.from("posts_thunder").select("id, deal_id").eq("workspace_id", workspaceId).in("deal_id", dealIds).is("deleted_at", null)
+    : { data: [] as { id: string; deal_id: string }[], error: null };
+  fromDb(posts.error, "Loading posts");
+  const postIds = (posts.data ?? []).map((p) => p.id);
+  const latest = postIds.length
+    ? await db.from("post_latest_metrics_thunder").select("post_id, views").eq("workspace_id", workspaceId).in("post_id", postIds)
+    : { data: [] as { post_id: string; views: number | null }[], error: null };
+  fromDb(latest.error, "Loading metrics");
+  const viewsOf = new Map((latest.data ?? []).map((m) => [m.post_id as string, m.views as number | null]));
+
+  return (deals.data ?? []).flatMap((d) => {
+    const inf = one(d.influencer as unknown as (PreviousRow["influencer"] & { deleted_at: string | null }) | null);
+    if (!inf || inf.deleted_at) return [];
+    const ps = (posts.data ?? []).filter((p) => p.deal_id === d.id);
+    const vs = ps.map((p) => viewsOf.get(p.id)).filter((v): v is number => typeof v === "number");
+    const st = stage.get(d.stage_id as string);
+    return [{
+      influencer: { id: inf.id, name: inf.name, handle: inf.handle, followers: inf.followers, is_blacklisted: inf.is_blacklisted },
+      stage: (st?.name as string) ?? "–", dropped: st?.kind === "dropped", product: d.product as string | null,
+      client_price: d.client_price as number | null, payout: d.payout as number | null,
+      views: vs.length ? vs.reduce((t, v) => t + Number(v), 0) : null, posts: ps.length,
+    }];
+  });
+}
+
+// ── Campaign cards: where each campaign's influencers are in the pipeline ──
+export type PipelineMix = { total: number; working: number; confirmed: number; done: number; dropped: number };
+
+/** Per campaign: in progress (before Confirmed), confirmed (in reports, not finished), done, dropped. */
+export async function pipelineMix(db: Db, workspaceId: string, ids: string[]) {
+  const out = new Map<string, PipelineMix>();
+  if (!ids.length) return out;
+  const [deals, stages] = await Promise.all([
+    db.from("deals_thunder").select("campaign_id, stage_id").eq("workspace_id", workspaceId).in("campaign_id", ids).is("deleted_at", null),
+    db.from("pipeline_stages_thunder").select("id, kind, in_reports").eq("workspace_id", workspaceId),
+  ]);
+  fromDb(deals.error ?? stages.error, "Loading pipeline");
+  const st = new Map((stages.data ?? []).map((x) => [x.id as string, x]));
+  for (const d of deals.data ?? []) {
+    const m = out.get(d.campaign_id) ?? { total: 0, working: 0, confirmed: 0, done: 0, dropped: 0 };
+    const k = st.get(d.stage_id as string);
+    m.total++;
+    if (k?.kind === "dropped") m.dropped++;
+    else if (k?.kind === "done") m.done++;
+    else if (k?.in_reports) m.confirmed++;
+    else m.working++;
+    out.set(d.campaign_id, m);
+  }
+  return out;
 }

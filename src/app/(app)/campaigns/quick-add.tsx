@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { quickAddAction, type QuickAddState } from "./actions";
 import { btnPrimary, btnSecondary, inputCls } from "@/components/ui";
+import { InstagramFill } from "@/components/instagram";
 
 /** Add a brand-new (or existing) influencer to this campaign without leaving it. */
 export function QuickAdd({ campaignId, defaultOpen = false, defaultHandle = "", products = [] }: { campaignId: string; defaultOpen?: boolean; defaultHandle?: string; products?: string[] }) {
@@ -38,6 +39,7 @@ export function QuickAdd({ campaignId, defaultOpen = false, defaultHandle = "", 
       {state.error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
       <form action={action} key={JSON.stringify(state)} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <input name="handle" required autoFocus placeholder="@handle or profile link *" defaultValue={s("handle")} className={inputCls} />
+        <InstagramFill compact />
         <input name="name" placeholder="Name" defaultValue={s("name")} className={inputCls} />
         <input name="followers" inputMode="numeric" placeholder="Followers" defaultValue={s("followers")} className={inputCls} />
         <input name="city" placeholder="City" defaultValue={s("city")} className={inputCls} />

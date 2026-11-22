@@ -8,6 +8,7 @@ import { derive, sumMetrics, type Metrics } from "@/lib/services/metrics";
 import { ServiceError } from "@/lib/services/errors";
 import { Card } from "@/components/ui";
 import { DueSnapshots } from "@/components/due-snapshots";
+import { RefreshPostsButton } from "@/components/instagram";
 import { compact, inr } from "@/lib/format";
 import { CampaignTabs } from "../../campaign-tabs";
 import { StatusBadge } from "../../status-badge";
@@ -62,10 +63,13 @@ async function Perf({ params, searchParams }: { params: PageProps<"/campaigns/[i
         ))}
       </dl>
 
+      <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="flex items-center gap-2 text-xs">
         <span className="text-zinc-500">Costs based on:</span>
         <Link href={`/campaigns/${id}/performance`} className={`rounded-md px-2 py-1 ${basis === "client" ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-200"}`}>Cost to client</Link>
         <Link href={`/campaigns/${id}/performance?basis=payout`} className={`rounded-md px-2 py-1 ${basis === "payout" ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-200"}`}>Our payout (internal)</Link>
+      </div>
+      <RefreshPostsButton campaignId={id} label="Refresh likes, comments & views (all posts)" />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">

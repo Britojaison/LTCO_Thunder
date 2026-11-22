@@ -113,3 +113,76 @@ export async function myPendingInvites(db: Db) {
   fromDb(error, "Loading invites");
   return (data ?? []) as { token: string; workspace_name: string; invited_at: string }[];
 }
+
+// ── Team directory and history (from activity_log_thunder) ──────────────
+// Removing a member deletes their membership row, but the log keeps a copy of it (name, email),
+// so history can still name people who have left.
+
+export type Person = { name: string; email: string; current: boolean };
+const displayName = (full: unknown, email: unknown) => (typeof full === "string" && full.trim() ? full.trim() : String(email ?? "").split("@")[0] || "Unknown");
+
+export async function memberDirectory(db: Db, workspaceId: string) {
+  const [current, former] = await Promise.all([
+    listMembers(db, workspaceId),
+    db.from("activity_log_thunder").select("record_id, before, at").eq("workspace_id", workspaceId)
+      .eq("table_name", "workspace_members_thunder").eq("action", "hard_delete").order("at"),
+  ]);
+  fromDb(former.error, "Loading team history");
+  const dir = new Map<string, Person>();
+  for (const r of former.data ?? []) {
+    const b = (r.before ?? {}) as Record<string, unknown>;
+    dir.set(String(r.record_id), { name: displayName(b.full_name, b.email), email: String(b.email ?? ""), current: false });
+  }
+  for (const m of current) dir.set(m.user_id, { name: displayName(m.full_name, m.email), email: m.email, current: true });
+  return dir;
+}
+
+/** "Shreya" for a current member, "Shreya (removed)" for someone who has left. */
+export function personLabel(dir: Map<string, Person>, uid: unknown) {
+  if (!uid) return "System";
+  const p = dir.get(String(uid));
+  return p ? (p.current ? p.name : `${p.name} (removed)`) : "a former member";
+}
+
+export type TeamEvent = { at: string; text: string };
+
+/** Joins, removals, invites and revocations, newest first. Removals also say how many
+ *  campaigns lost their POC and how many deals lost their owner. */
+export async function teamHistory(db: Db, workspaceId: string, limit = 50): Promise<TeamEvent[]> {
+  const cols = "at, actor_id, action, table_name, record_id, before, after";
+  const [dir, people, invites, cleared] = await Promise.all([
+    memberDirectory(db, workspaceId),
+    db.from("activity_log_thunder").select(cols).eq("workspace_id", workspaceId).eq("table_name", "workspace_members_thunder")
+      .in("action", ["insert", "hard_delete"]).order("at", { ascending: false }).limit(limit),
+    db.from("activity_log_thunder").select(cols).eq("workspace_id", workspaceId).eq("table_name", "workspace_invites_thunder")
+      .in("action", ["insert", "hard_delete"]).order("at", { ascending: false }).limit(limit),
+    // Rows cleared by a removal: before had the person, after has null.
+    db.from("activity_log_thunder").select("at, table_name, before").eq("workspace_id", workspaceId)
+      .in("table_name", ["campaigns_thunder", "deals_thunder"]).eq("action", "update")
+      .order("at", { ascending: false }).limit(2000),
+  ]);
+  fromDb(people.error ?? invites.error ?? cleared.error, "Loading team history");
+  const who = (uid: unknown) => personLabel(dir, uid);
+  const events: TeamEvent[] = [];
+
+  for (const r of people.data ?? []) {
+    const row = (r.after ?? r.before ?? {}) as Record<string, unknown>;
+    const name = displayName(row.full_name, row.email);
+    if (r.action === "insert") {
+      events.push({ at: r.at, text: r.actor_id === r.record_id ? `${name} joined the team` : `${who(r.actor_id)} added ${name} to the team` });
+    } else {
+      const uid = String(r.record_id);
+      const same = (cleared.data ?? []).filter((c) => c.at === r.at);
+      const camps = same.filter((c) => c.table_name === "campaigns_thunder" && (c.before as Record<string, unknown>)?.poc_id === uid).length;
+      const deals = same.filter((c) => c.table_name === "deals_thunder" && (c.before as Record<string, unknown>)?.owner_id === uid).length;
+      const extra = [camps && `${camps} campaign${camps > 1 ? "s" : ""} now ${camps > 1 ? "have" : "has"} no POC`, deals && `${deals} deal${deals > 1 ? "s" : ""} now ${deals > 1 ? "have" : "has"} no owner`].filter(Boolean).join(", ");
+      events.push({ at: r.at, text: `${who(r.actor_id)} removed ${name} (${String(row.email ?? "")}) from the team${extra ? `. ${extra}` : ""}` });
+    }
+  }
+  for (const r of invites.data ?? []) {
+    const row = (r.after ?? r.before ?? {}) as Record<string, unknown>;
+    if (r.action === "insert") events.push({ at: r.at, text: `${who(r.actor_id)} invited ${String(row.email)}` });
+    else if (!row.accepted_at) events.push({ at: r.at, text: `${who(r.actor_id)} cancelled the invite for ${String(row.email)}` });
+  }
+  return events.sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, limit);
+}

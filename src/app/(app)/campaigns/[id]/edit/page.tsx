@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireWorkspace } from "@/lib/auth";
 import { listBrands } from "@/lib/services/brands";
-import { getCampaign } from "@/lib/services/campaigns";
+import { getCampaign, memberName } from "@/lib/services/campaigns";
+import { listMembers } from "@/lib/services/team";
 import { ServiceError } from "@/lib/services/errors";
 import { CampaignForm } from "../../campaign-form";
 import { updateCampaignAction } from "../../actions";
@@ -28,5 +29,6 @@ async function Edit({ params }: { params: PageProps<"/campaigns/[id]/edit">["par
     }),
     listBrands(db, workspace.id),
   ]);
-  return <CampaignForm action={updateCampaignAction.bind(null, id)} brands={brands} initial={campaign} cancelHref={`/campaigns/${id}`} submitLabel="Save changes" />;
+  const members = (await listMembers(db, workspace.id)).map((m) => ({ user_id: m.user_id, name: memberName(m)! }));
+  return <CampaignForm action={updateCampaignAction.bind(null, id)} brands={brands} members={members} initial={campaign} cancelHref={`/campaigns/${id}`} submitLabel="Save changes" />;
 }

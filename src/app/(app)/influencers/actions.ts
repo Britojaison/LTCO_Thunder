@@ -12,8 +12,9 @@ import { saveSearch, deleteSavedSearch } from "@/lib/services/saved-searches";
 import { addInfluencersToCampaign } from "@/lib/services/campaigns";
 import {
   createInfluencer, updateInfluencer, setBlacklist, softDeleteInfluencer, restoreInfluencer,
-  addCompetitorPromo, removeCompetitorPromo, approvePending, rejectPending,
+  addCompetitorPromo, removeCompetitorPromo, approvePending, rejectPending, findByHandle,
 } from "@/lib/services/influencers";
+import { lookupProfile, refreshInfluencerFromInstagram, type ProfileLookup } from "@/lib/services/instagram";
 
 // Actions are thin: check the session, call a service, map errors to a message.
 const message = (e: unknown) => (e instanceof ServiceError ? e.message : "Something went wrong. Please try again.");
@@ -144,4 +145,26 @@ export async function rejectPendingAction(form: FormData) {
   const { db, workspace, user } = await requireWorkspace();
   await rejectPending(db, workspace.id, user.id, String(form.get("id")));
   refresh();
+}
+
+// ── Instagram (Business Discovery) ───────────────────────────
+export async function lookupInstagramAction(handle: string): Promise<{ error?: string; profile?: ProfileLookup; existing?: { id: string; name: string } }> {
+  const { db, workspace } = await requireWorkspace();
+  try {
+    const [profile, existing] = await Promise.all([lookupProfile(handle), findByHandle(db, workspace.id, handle)]);
+    return { profile, existing: existing ? { id: existing.id, name: existing.name } : undefined };
+  } catch (e) {
+    return { error: message(e) };
+  }
+}
+
+export async function refreshInfluencerIgAction(id: string): Promise<{ error?: string; ok?: string }> {
+  const { db, workspace } = await requireWorkspace();
+  try {
+    const p = await refreshInfluencerFromInstagram(db, workspace.id, id);
+    refresh();
+    return { ok: `Updated: ${p.followers?.toLocaleString("en-IN") ?? "–"} followers${p.engagement_rate !== null ? `, ${p.engagement_rate}% engagement` : ""}` };
+  } catch (e) {
+    return { error: message(e) };
+  }
 }

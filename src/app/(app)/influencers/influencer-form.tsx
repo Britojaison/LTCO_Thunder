@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import type { FormState } from "./actions";
 import { btnPrimary, btnSecondary, Card, Field, inputCls } from "@/components/ui";
 import { cap } from "@/lib/format";
+import { InstagramFill } from "@/components/instagram";
 
 type Values = Record<string, string | string[] | number | boolean | null | undefined>;
 type Vocab = { niches: string[]; languages: string[]; contentStyles: string[]; formats: string[] };
@@ -53,7 +54,9 @@ export function InfluencerForm({
       <Card title="Basics">
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Name *"><input name="name" required defaultValue={s("name")} className={inputCls} /></Field>
-          <Field label="Instagram handle *" hint="@handle or profile link"><input name="handle" required defaultValue={s("handle")} className={inputCls} /></Field>
+          <Field label="Instagram handle *" hint="@handle or profile link. Fetch fills followers, engagement rate and reel views.">
+            <div className="flex gap-2"><input name="handle" required defaultValue={s("handle")} className={inputCls} /><InstagramFill compact /></div>
+          </Field>
           <Field label="City"><input name="city" defaultValue={s("city")} className={inputCls} /></Field>
           <Field label="State"><input name="state" defaultValue={s("state")} className={inputCls} /></Field>
           <Field label="Gender">

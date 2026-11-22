@@ -7,12 +7,13 @@ import { btnPrimary, btnSecondary, Card, Field, inputCls } from "@/components/ui
 
 type Initial = {
   brand_id?: string; name?: string; brief?: string | null; objective?: string | null;
-  start_date?: string | null; end_date?: string | null; status?: string;
+  start_date?: string | null; end_date?: string | null; status?: string; poc_id?: string | null;
   deliverables?: { format: string; count: number }[];
 };
 
-export function CampaignForm({ action, brands, initial = {}, cancelHref, submitLabel }: {
+export function CampaignForm({ action, brands, members, initial = {}, cancelHref, submitLabel }: {
   action: (s: FormState, f: FormData) => Promise<FormState>; brands: { id: string; name: string }[];
+  members: { user_id: string; name: string }[];
   initial?: Initial; cancelHref: string; submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
@@ -38,6 +39,12 @@ export function CampaignForm({ action, brands, initial = {}, cancelHref, submitL
             <select name="status" defaultValue={s("status") || "planning"} className={inputCls}>
               <option value="planning">Planning</option><option value="live">Live</option>
               <option value="completed">Completed</option><option value="archived">Archived</option>
+            </select>
+          </Field>
+          <Field label="POC *" hint="Team member responsible for this campaign">
+            <select name="poc_id" required defaultValue={s("poc_id")} className={inputCls}>
+              <option value="">Choose a team member</option>
+              {members.map((m) => <option key={m.user_id} value={m.user_id}>{m.name}</option>)}
             </select>
           </Field>
           <Field label="Objective"><input name="objective" placeholder="e.g. Launch awareness in Tamil Nadu" defaultValue={s("objective")} className={inputCls} /></Field>

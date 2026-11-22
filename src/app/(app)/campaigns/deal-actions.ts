@@ -9,6 +9,7 @@ import {
   moveDeal, updateDeal, updatePayment, removeDeal, addContact, updateDealProduct,
   createDealUpload, attachDealFile, detachDealFile,
 } from "@/lib/services/deals";
+import { refreshPostsFromInstagram, type RefreshResult } from "@/lib/services/instagram";
 import { addPost, deletePost, saveSnapshot, deleteSnapshot, createScreenshotUpload } from "@/lib/services/posts";
 
 export type FormState = { error?: string; ok?: string; values?: Record<string, string | string[]> };
@@ -163,4 +164,17 @@ export async function updateProductAction(dealId: string, product: string): Prom
   }
   refresh();
   return {};
+}
+
+/** Pulls likes and comments from Instagram for one deal's posts, or a whole campaign's. */
+export async function refreshPostsIgAction(target: { dealId?: string; campaignId?: string }): Promise<{ error?: string; result?: RefreshResult }> {
+  const { db, workspace, user } = await requireWorkspace();
+  if (!target.dealId && !target.campaignId) return { error: "Nothing to refresh" };
+  try {
+    const result = await refreshPostsFromInstagram(db, workspace.id, user.id, target);
+    refresh();
+    return { result };
+  } catch (e) {
+    return { error: message(e) };
+  }
 }

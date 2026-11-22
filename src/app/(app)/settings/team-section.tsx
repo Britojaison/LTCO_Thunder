@@ -52,7 +52,7 @@ export function TeamSection({ members, invites, me, siteUrl, agency }: { members
             </span>
             {m.user_id !== me && (confirm === m.user_id ? (
               <span className="flex items-center gap-2 text-xs">
-                Remove {m.full_name || m.email}? They lose access immediately.
+                Remove {m.full_name || m.email}? They lose access immediately. Their campaigns and deals stay, without a POC/owner, and the removal is kept in history.
                 <button disabled={busy} className="font-medium text-red-700"
                   onClick={() => start(async () => { const r = await removeMemberAction(m.user_id); setRemoveError(r.error); setConfirm(undefined); })}>Remove</button>
                 <button className="text-zinc-500" onClick={() => setConfirm(undefined)}>Cancel</button>

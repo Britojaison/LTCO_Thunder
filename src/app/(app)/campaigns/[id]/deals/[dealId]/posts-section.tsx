@@ -4,6 +4,7 @@ import { latestSnapshot } from "@/lib/services/posts";
 import { METRIC_KEYS, METRIC_LABELS, derive, sumMetrics } from "@/lib/services/metrics";
 import { cap, compact, dateIN } from "@/lib/format";
 import { AddPostForm } from "./add-post-form";
+import { RefreshPostsButton } from "@/components/instagram";
 import { SnapshotForm, DeletePostButton, DeleteSnapshotButton } from "./snapshot-form";
 
 const POINTS = ["24h", "7d", "30d"] as const;
@@ -108,7 +109,10 @@ export function PostsSection({ dealId, posts, clientPrice, payout, shotUrls }: {
         })}
       </div>
 
-      <div className="mt-4"><AddPostForm dealId={dealId} startOpen={posts.length === 0} /></div>
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+        <AddPostForm dealId={dealId} startOpen={posts.length === 0} />
+        {posts.length > 0 && <RefreshPostsButton dealId={dealId} />}
+      </div>
     </Card>
   );
 }
