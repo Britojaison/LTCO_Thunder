@@ -78,7 +78,7 @@ export function RefreshPostsButton({ dealId, campaignId, label = "Refresh likes,
     if (r.error || !r.result) return setMsg({ error: r.error ?? "Refresh failed" });
     const { updated, notFound, skipped, errors } = r.result;
     const detail = [
-      ...errors,
+      ...(updated ? errors : errors.slice(1)), // the first error is already the headline when nothing updated
       ...notFound.map((u) => `Not found on the influencer's feed (collab on another account?): ${u.replace(/^https?:\/\/(www\.)?/, "")}`),
     ];
     setMsg({

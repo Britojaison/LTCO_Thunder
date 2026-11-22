@@ -1,12 +1,13 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { requireUser, ACTIVE_WS_COOKIE } from "@/lib/auth";
 import { acceptInvite } from "@/lib/services/team";
 import { ServiceError } from "@/lib/services/errors";
 
-export async function acceptInviteAction(token: string, _: { error?: string }, form: FormData): Promise<{ error?: string }> {
+export type JoinState = { error?: string; redirectTo?: string };
+
+export async function acceptInviteAction(token: string, _: JoinState, form: FormData): Promise<JoinState> {
   const { db } = await requireUser();
   let workspaceId: string;
   try {
@@ -15,5 +16,7 @@ export async function acceptInviteAction(token: string, _: { error?: string }, f
     return { error: e instanceof ServiceError ? e.message : "Couldn't join. Please try again." };
   }
   (await cookies()).set(ACTIVE_WS_COOKIE, workspaceId, { path: "/", sameSite: "lax", httpOnly: true, maxAge: 60 * 60 * 24 * 365 });
-  redirect("/campaigns");
+  // The browser does a full page load to this address (see JoinForm), so no screen from
+  // before joining (like "Set up your agency") can be reused from its page cache.
+  return { redirectTo: "/campaigns" };
 }

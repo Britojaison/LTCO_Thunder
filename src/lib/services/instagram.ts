@@ -62,13 +62,17 @@ async function discoverOnce(handle: string, mediaFields: string): Promise<Discov
 
 function graphError(err: { code?: number; error_subcode?: number; message?: string } | undefined, handle: string) {
   const code = err?.code;
-  if (code === 190) return new ServiceError("The Instagram token has expired. Generate a new one and update META_ACCESS_TOKEN.");
+  if (code === 190) return new ServiceError("Meta rejected the Instagram token (expired or invalid). Generate a new one and update META_ACCESS_TOKEN in the environment variables.");
   if (code === 4 || code === 17 || code === 32 || code === 613 || code === 80002)
     return new ServiceError("Instagram rate limit reached. Try again in about an hour.");
   if (code === 10 || code === 200) return new ServiceError("The Instagram token is missing a permission (instagram_basic, instagram_manage_insights, pages_read_engagement).");
   if (code === 100 && /reposts_count/i.test(err?.message ?? "")) return new ServiceError(`Instagram: ${err?.message}`);
-  if (code === 110 || code === 100 || err?.error_subcode === 2207013)
-    return new ServiceError(`@${handle} wasn't found, or it's a personal/private account. Only public business and creator accounts can be looked up.`, "validation");
+  // Our own account (META_IG_USER_ID) can't be read with this token: a setup problem, not the creator's account.
+  if (code === 100 && (err?.error_subcode === 33 || /Unsupported get request|does not exist|missing permissions/i.test(err?.message ?? "")))
+    return new ServiceError("Thunder can't reach the agency Instagram account in META_IG_USER_ID with this token. Check that the System User has the agency Page and Instagram account assigned, and that META_IG_USER_ID is that account's id.");
+  if (code === 110 || err?.error_subcode === 2207013 || (code === 100 && /cannot be found|username/i.test(err?.message ?? "")))
+    return new ServiceError(`@${handle} can't be looked up: it isn't a professional (Business or Creator) Instagram account, or the handle is wrong. Public personal accounts can't be read by apps.`, "validation");
+  if (code === 100) return new ServiceError(`Instagram: ${err?.message ?? "request not allowed"}`);
   return new ServiceError(`Instagram: ${err?.message ?? "unknown error"}`);
 }
 
@@ -188,8 +192,11 @@ export async function refreshPostsFromInstagram(db: Db, workspaceId: string, use
     try {
       found = await findMedia(handle, new Set(list.map((p) => p.code)), oldest);
     } catch (e) {
-      out.errors.push(`@${handle}: ${e instanceof ServiceError ? e.message : "lookup failed"}`);
-      if (e instanceof ServiceError && /expired|rate limit|permission|isn't set up/.test(e.message)) break;
+      const notReadable = e instanceof ServiceError && e.code === "validation" && /can't be looked up/.test(e.message);
+      out.errors.push(notReadable
+        ? `@${handle} isn't a Business/Creator account (or the handle changed), so Instagram doesn't let Thunder read its posts. Enter the numbers with "Enter metrics" (from their Insights screenshot), or check the handle on their profile.`
+        : `@${handle}: ${e instanceof ServiceError ? e.message : "lookup failed"}`);
+      if (e instanceof ServiceError && /token|rate limit|permission|isn't set up|META_IG_USER_ID/.test(e.message)) break;
       continue;
     }
     for (const p of list) {
