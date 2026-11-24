@@ -16,10 +16,7 @@ export async function WorkspaceSwitcher() {
       ) : (
         <p className="truncate text-sm font-medium">{workspace.name}</p>
       )}
-      <form action="/auth/signout" method="post" className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs text-zinc-500">{user.email}</span>
-        <button className="text-xs text-zinc-600 underline">Sign out</button>
-      </form>
+      <p className="truncate text-xs text-zinc-500">{user.email}</p>
     </div>
   );
 }
