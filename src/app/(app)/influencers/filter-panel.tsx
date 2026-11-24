@@ -29,20 +29,20 @@ export function FilterPanel({ filters: f, vocab, sort }: { filters: Filters; voc
       </div>
       <fieldset>
         <legend className="text-xs font-medium text-zinc-600">Languages</legend>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-2">
           {vocab.languages.map((l) => (
-            <label key={l} className="flex items-center gap-1 text-sm">
-              <input type="checkbox" name="languages" value={l} defaultChecked={f.languages?.includes(l)} /> {cap(l)}
+            <label key={l} className="flex min-w-0 items-center gap-2 text-sm">
+              <input className="shrink-0" type="checkbox" name="languages" value={l} defaultChecked={f.languages?.includes(l)} /> {cap(l)}
             </label>
           ))}
         </div>
       </fieldset>
       <fieldset>
         <legend className="text-xs font-medium text-zinc-600">Formats offered</legend>
-        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-2">
           {vocab.formats.map((l) => (
-            <label key={l} className="flex items-center gap-1 text-sm">
-              <input type="checkbox" name="formats" value={l} defaultChecked={f.formats?.includes(l)} /> {cap(l)}
+            <label key={l} className="flex min-w-0 items-center gap-2 text-sm">
+              <input className="shrink-0" type="checkbox" name="formats" value={l} defaultChecked={f.formats?.includes(l)} /> {cap(l)}
             </label>
           ))}
         </div>
@@ -62,7 +62,7 @@ export function FilterPanel({ filters: f, vocab, sort }: { filters: Filters; voc
         <Field label="ER min %"><input name="er_min" type="number" step="0.1" min={0} defaultValue={f.er_min ?? ""} className={inputCls} /></Field>
         <Field label="ER max %"><input name="er_max" type="number" step="0.1" min={0} defaultValue={f.er_max ?? ""} className={inputCls} /></Field>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2">
         <Field label="Rate for">
           <select name="rate_format" defaultValue={f.rate_format ?? "reel"} className={inputCls}>
             <option value="reel">Reel</option><option value="story">Story</option>
@@ -91,9 +91,9 @@ export function FilterPanel({ filters: f, vocab, sort }: { filters: Filters; voc
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="include_blacklisted" value="true" defaultChecked={f.include_blacklisted} /> Include blacklisted
       </label>
-      <div className="flex gap-2">
-        <button className={btnPrimary}>Apply filters</button>
-        <Link href="/influencers" className={btnSecondary}>Clear</Link>
+      <div className="flex items-center gap-2">
+        <button className={`${btnPrimary} h-11 min-w-0 flex-1`}>Apply filters</button>
+        <Link href="/influencers" className={`${btnSecondary} h-11 min-w-0 flex-1`}>Clear</Link>
       </div>
     </form>
   );

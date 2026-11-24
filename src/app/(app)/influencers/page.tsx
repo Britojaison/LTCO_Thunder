@@ -52,13 +52,18 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">Influencers</h1>
-        <div className="flex gap-2">
-          <Link href="/influencers/pending" className={btnSecondary}>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ff5a1f]">Creator network</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#18191c]">Influencers</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">Discover, filter, and manage your creator relationships.</p>
+        </div>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <span className="inline-flex h-11 items-center rounded-full border border-[#eceef2] bg-white px-3 text-xs font-medium text-zinc-600">{chips.length ? `${chips.length} active filters` : "All influencers"}</span>
+          <Link href="/influencers/pending" className={`${btnSecondary} h-11 whitespace-nowrap`}>
             Review queue{pending ? ` (${pending})` : ""}
           </Link>
-          <Link href="/influencers/new" className={btnPrimary}>Add influencer</Link>
+          <Link href="/influencers/new" className={`${btnPrimary} h-11 w-[152px] whitespace-nowrap`}>Add influencer</Link>
         </div>
       </div>
 
@@ -68,7 +73,7 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
         <div className="flex flex-wrap items-center gap-2">
           {chips.map((c) => (
             <Link key={c.label} href={`/influencers${filtersToQuery(withoutKeys(filters, c.remove), { sort })}`}
-              className="inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1 text-xs hover:border-zinc-900">
+              className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs text-orange-800 hover:border-orange-400">
               {c.label} <span aria-hidden className="text-zinc-400">×</span>
               <span className="sr-only">Remove filter</span>
             </Link>
@@ -103,7 +108,7 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
             <div className="flex flex-wrap gap-1">
               {SORTS.map((s) => (
                 <Link key={s} href={link({ sort: s })}
-                  className={`rounded-md px-2 py-1 text-xs ${s === sort ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-200"}`}>
+                  className={`rounded-full px-3 py-1.5 text-xs ${s === sort ? "bg-[#ff5a1f] text-white" : "text-zinc-600 hover:bg-white"}`}>
                   {SORT_LABELS[s]}
                 </Link>
               ))}

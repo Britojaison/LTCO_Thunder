@@ -13,7 +13,10 @@ export const metadata = { title: "Settings" };
 export default function SettingsPage() {
   return (
     <section className="max-w-5xl space-y-4">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#18191c]">Settings</h1>
+        <p className="mt-1 text-sm text-[#6b7280]">Manage your workspace, team, and client branding.</p>
+      </div>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><Settings /></Suspense>
     </section>
   );

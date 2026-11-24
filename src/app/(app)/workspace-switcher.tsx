@@ -8,10 +8,10 @@ export async function WorkspaceSwitcher() {
       {workspaces.length > 1 ? (
         <form action={switchWorkspace} className="flex gap-1">
           <select name="workspaceId" defaultValue={workspace.id}
-            className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm">
+            className="min-w-0 flex-1 rounded-xl border border-[#eceef2] bg-white px-3 py-2 text-sm">
             {workspaces.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
           </select>
-          <button className="rounded-md border border-zinc-300 px-2 text-sm">Go</button>
+          <button className="rounded-xl bg-[#ff5a1f] px-3 py-2 text-sm font-medium text-white hover:bg-[#ef4d19]">Go</button>
         </form>
       ) : (
         <p className="truncate text-sm font-medium">{workspace.name}</p>

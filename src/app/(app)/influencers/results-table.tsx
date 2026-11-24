@@ -27,7 +27,7 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
 
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white p-2 text-sm">
+      <div className="mb-2 flex flex-wrap items-center gap-2 rounded-2xl border border-[#eceef2] bg-white p-3 text-sm shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
         <span className="px-1 text-zinc-600">{selected.size} selected</span>
         {campaigns.length ? (
           <>
@@ -55,9 +55,9 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
         {result.error && <span className="text-red-600">{result.error}</span>}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-[#eceef2] bg-white shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500">
+          <thead className="border-b border-[#eceef2] bg-[#fafbfc] text-left text-xs text-zinc-500">
             <tr>
               <th className="w-8 p-2">
                 <input type="checkbox" aria-label="Select all" checked={allOn}
@@ -75,7 +75,7 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className={`border-b border-zinc-100 last:border-0 ${selected.has(r.id) ? "bg-zinc-50" : ""}`}>
+              <tr key={r.id} className={`border-b border-zinc-100 last:border-0 ${selected.has(r.id) ? "bg-orange-50/60" : "hover:bg-zinc-50/70"}`}>
                 <td className="p-2"><input type="checkbox" aria-label={`Select ${r.name}`} checked={selected.has(r.id)} onChange={() => toggle(r.id)} /></td>
                 <td className="p-2"><FitScore score={r.fit_score} /></td>
                 <td className="p-2">

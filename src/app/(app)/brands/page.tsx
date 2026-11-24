@@ -10,8 +10,11 @@ export const metadata = { title: "Brands" };
 export default function BrandsPage() {
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Brands</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#18191c]">Brands</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">Manage client brands and their campaign history.</p>
+        </div>
         <Link href="/brands/new" className={btnPrimary}>Add brand</Link>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><BrandList /></Suspense>
@@ -27,7 +30,7 @@ async function BrandList() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {brands.map((b) => (
-        <Link key={b.id} href={`/brands/${b.id}`} className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 hover:border-zinc-400">
+        <Link key={b.id} href={`/brands/${b.id}`} className="flex items-center gap-3 rounded-2xl border border-[#eceef2] bg-white p-4 shadow-[0_2px_12px_rgba(24,25,28,0.035)] transition hover:border-orange-200 hover:shadow-md">
           {b.logo_path && logos[b.logo_path] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logos[b.logo_path]} alt="" className="h-12 w-12 rounded-md object-contain" />

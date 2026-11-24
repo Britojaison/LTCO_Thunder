@@ -42,8 +42,8 @@ function NavIcon({ name }: { name: (typeof ITEMS)[number]["icon"] }) {
 
 function SignOut() {
   return (
-    <form action="/auth/signout" method="post" className="w-full md:mt-auto md:pt-3">
-      <button type="submit" title="Sign out" className="flex h-10 w-10 items-center justify-center gap-0 whitespace-nowrap rounded-xl p-0 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 md:group-hover/sidebar:w-full md:group-hover/sidebar:justify-start md:group-hover/sidebar:gap-3 md:group-hover/sidebar:rounded-md md:group-hover/sidebar:px-3">
+    <form action="/auth/signout" method="post" className="mt-1 w-full border-t border-zinc-200 pt-2">
+      <button type="submit" title="Sign out" className="mx-auto flex h-10 w-10 items-center justify-center gap-0 whitespace-nowrap rounded-xl p-0 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 md:group-hover/sidebar:mx-0 md:group-hover/sidebar:w-full md:group-hover/sidebar:justify-start md:group-hover/sidebar:gap-3 md:group-hover/sidebar:rounded-md md:group-hover/sidebar:px-3">
         <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" /><path d="M14 16l4-4-4-4M18 12H9" />
         </svg>
@@ -63,7 +63,7 @@ function NavItems({ path }: { path?: string }) {
             aria-current={active ? "page" : undefined}
             className={`flex h-10 w-10 items-center justify-center gap-0 whitespace-nowrap rounded-xl p-0 text-sm transition-[background-color,color,box-shadow,width] duration-200 md:group-hover/sidebar:w-full md:group-hover/sidebar:justify-start md:group-hover/sidebar:gap-3 md:group-hover/sidebar:rounded-2xl md:group-hover/sidebar:px-3 ${
               active
-                ? "bg-gradient-to-br from-[#3a3b40] to-[#26272b] text-white shadow-[0_4px_12px_rgba(20,20,24,0.2)]"
+                ? "bg-[#ff5a1f] text-white shadow-[0_4px_12px_rgba(255,90,31,0.24)]"
                 : "text-zinc-700 hover:bg-zinc-200"
             }`}>
             <NavIcon name={item.icon} />

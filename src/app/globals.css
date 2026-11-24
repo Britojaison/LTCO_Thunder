@@ -7,6 +7,46 @@
 
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: #f5f6f8;
+}
+
+body,
+body * {
+  caret-color: transparent;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+  caret-color: auto;
+}
+
+input[type="checkbox"] {
+  accent-color: #ff5a1f;
+}
+
+.app-main .rounded-lg.border.border-zinc-200.bg-white,
+.app-main .rounded-xl.border.border-zinc-200.bg-white {
+  border-color: #eceef2;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(24, 25, 28, 0.035);
+}
+
+.app-main table thead {
+  background: #fafbfc;
+}
+
+.app-main .bg-zinc-900.text-white {
+  background-color: #ff5a1f;
+}
+
+.app-main .border-zinc-900.bg-zinc-900 {
+  border-color: #ff5a1f;
+}
+
+.app-main .text-blue-700 {
+  color: #ff5a1f;
 }
 
 /* Client report: A4 print layout */

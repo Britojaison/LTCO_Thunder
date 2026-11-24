@@ -10,7 +10,7 @@ export const metadata = { title: "Reports" };
 export default function ReportsPage() {
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">Client reports</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-[#18191c]">Client reports</h1>
       <p className="text-sm text-zinc-500">To make a new report, open a campaign and choose the “Client report” tab.</p>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><List /></Suspense>
     </section>

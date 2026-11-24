@@ -1,17 +1,17 @@
 import type { ComponentProps, ReactNode } from "react";
 
 export const inputCls =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900 disabled:bg-zinc-100";
+  "min-w-0 w-full rounded-xl border border-[#eceef2] bg-white px-3 py-2 text-sm outline-none transition focus:border-[#ff6b2b] focus:ring-2 focus:ring-orange-100 disabled:bg-zinc-100";
 export const btnPrimary =
-  "inline-flex items-center justify-center rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl bg-[#ff5a1f] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ef4d19] hover:shadow-md disabled:opacity-50";
 export const btnSecondary =
-  "inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-[#eceef2] bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50";
 export const btnDanger =
-  "inline-flex items-center justify-center rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="text-xs font-medium text-zinc-600">{label}</span>
       <div className="mt-1">{children}</div>
       {hint && <span className="mt-1 block text-xs text-zinc-400">{hint}</span>}
@@ -21,7 +21,7 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 
 export function Card({ title, actions, children, className = "" }: { title?: string; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-xl border border-zinc-200 bg-white p-4 ${className}`}>
+    <section className={`rounded-2xl border border-[#eceef2] bg-white p-5 shadow-[0_2px_12px_rgba(24,25,28,0.035)] ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex items-center justify-between gap-2">
           {title && <h2 className="text-sm font-semibold text-zinc-800">{title}</h2>}

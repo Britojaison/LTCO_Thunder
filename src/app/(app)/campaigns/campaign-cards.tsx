@@ -50,7 +50,7 @@ export function CampaignCard({ c, mix, due, logo, today }: { c: Row; mix: Pipeli
   const allMissing = f.influencer_count > 0 && f.missing_payout === f.influencer_count;
   return (
     <Link href={`/campaigns/${c.id}`}
-      className="group flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-400 hover:shadow">
+      className="group flex flex-col gap-3 rounded-2xl border border-[#eceef2] bg-white p-4 shadow-[0_2px_12px_rgba(24,25,28,0.035)] transition hover:border-orange-200 hover:shadow-md">
       <div className="flex items-start gap-3">
         {logo
           // eslint-disable-next-line @next/next/no-img-element

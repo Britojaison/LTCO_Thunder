@@ -19,8 +19,11 @@ const SECTIONS: [CampaignStatus, string][] = [["live", "Live"], ["planning", "Pl
 export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">) {
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Campaigns</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#18191c]">Campaigns</h1>
+          <p className="mt-1 text-sm text-[#6b7280]">Track your creator partnerships and campaign performance.</p>
+        </div>
         <Link href="/campaigns/new" className={btnPrimary}>New campaign</Link>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><List searchParams={searchParams} /></Suspense>
@@ -54,7 +57,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
     const s = p.toString();
     return `/campaigns${s ? `?${s}` : ""}`;
   };
-  const pill = (on: boolean) => `rounded-md px-2.5 py-1 ${on ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-200"}`;
+  const pill = (on: boolean) => `rounded-full px-3 py-1.5 ${on ? "bg-[#ff5a1f] text-white" : "text-zinc-600 hover:bg-white"}`;
   const pocTabs: [string, string][] = [["", "Everyone"], ["me", "Mine"],
     ...team.filter((m) => m.user_id !== user.id).map((m) => [m.user_id, memberName(m)!] as [string, string]), ["none", "No POC"]];
 
@@ -83,19 +86,19 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
             <span className="mr-1 text-xs text-zinc-500">POC</span>
             {pocTabs.map(([key, label]) => <Link key={key || "all"} href={qs({ poc: key })} className={pill(key === poc)}>{label}</Link>)}
           </nav>
-          <nav className="flex rounded-md border border-zinc-200 bg-white p-0.5 text-xs">
-            <Link href={qs({ view: "" })} className={`rounded px-2 py-1 ${view === "cards" ? "bg-zinc-900 text-white" : "text-zinc-600"}`}>Cards</Link>
-            <Link href={qs({ view: "table" })} className={`rounded px-2 py-1 ${view === "table" ? "bg-zinc-900 text-white" : "text-zinc-600"}`}>Table</Link>
+          <nav className="flex rounded-full border border-[#eceef2] bg-white p-0.5 text-xs shadow-sm">
+            <Link href={qs({ view: "" })} className={`rounded-full px-3 py-1.5 ${view === "cards" ? "bg-[#ff5a1f] text-white" : "text-zinc-600"}`}>Cards</Link>
+            <Link href={qs({ view: "table" })} className={`rounded-full px-3 py-1.5 ${view === "table" ? "bg-[#ff5a1f] text-white" : "text-zinc-600"}`}>Table</Link>
           </nav>
         </div>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {stats.map(([label, value, note]) => (
-          <div key={label} className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
-            <dt className="text-xs text-zinc-500">{label}</dt>
+        {stats.map(([label, value, note], index) => (
+          <div key={label} className={index === 0 ? "rounded-2xl bg-gradient-to-br from-[#ff5a1f] to-[#ff7a37] px-4 py-3 text-white shadow-[0_8px_20px_rgba(255,90,31,0.18)]" : "rounded-2xl border border-[#eceef2] bg-white px-4 py-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]"}>
+            <dt className={index === 0 ? "text-xs text-white/80" : "text-xs text-zinc-500"}>{label}</dt>
             <dd className="mt-0.5 text-xl font-semibold tabular-nums">{value}</dd>
-            {note && <p className="text-[11px] text-amber-700">{note}</p>}
+            {note && <p className={index === 0 ? "text-[11px] text-white/75" : "text-[11px] text-amber-700"}>{note}</p>}
           </div>
         ))}
       </dl>
