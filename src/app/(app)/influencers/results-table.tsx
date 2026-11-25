@@ -45,7 +45,7 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
                 })
               }
             >
-              {pending ? "Adding…" : "Add to campaign"}
+              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10-6.5-10-6.5Z" /></svg>{pending ? "Adding…" : "Add to campaign"}
             </button>
           </>
         ) : (
@@ -56,33 +56,33 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-[#eceef2] bg-white shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
-        <table className="w-full text-sm">
-          <thead className="border-b border-[#eceef2] bg-[#fafbfc] text-left text-xs text-zinc-500">
+        <table className="w-full table-fixed text-sm">
+          <thead className="border-b border-[#e5e7eb] bg-[#f8f9fb] text-left text-xs font-medium text-slate-500">
             <tr>
-              <th className="w-8 p-2">
+              <th className="w-8 p-2 align-middle">
                 <input type="checkbox" aria-label="Select all" checked={allOn}
                   onChange={() => setSelected(allOn ? new Set() : new Set(rows.map((r) => r.id)))} />
               </th>
-              <th className="p-2">Fit</th>
-              <th className="p-2">Influencer</th>
+              <th className="p-2 text-center">Fit</th>
+              <th className="w-[22%] p-2">Influencer</th>
               <th className="p-2">Location</th>
               <th className="p-2">Niches</th>
-              <th className="p-2 text-right">Followers</th>
-              <th className="p-2 text-right">ER</th>
-              <th className="p-2 text-right">Avg views</th>
-              <th className="p-2 text-right" title="Latest amount paid, or quoted rate if no deals yet">{cap(rateFormat)} rate</th>
+              <th className="p-2 text-right tabular-nums">Followers</th>
+              <th className="p-2 text-right tabular-nums">ER</th>
+              <th className="p-2 text-right tabular-nums">Avg views</th>
+              <th className="p-2 text-right tabular-nums" title="Latest amount paid, or quoted rate if no deals yet">{cap(rateFormat)} rate</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className={`border-b border-zinc-100 last:border-0 ${selected.has(r.id) ? "bg-orange-50/60" : "hover:bg-zinc-50/70"}`}>
                 <td className="p-2"><input type="checkbox" aria-label={`Select ${r.name}`} checked={selected.has(r.id)} onChange={() => toggle(r.id)} /></td>
-                <td className="p-2"><FitScore score={r.fit_score} /></td>
+                <td className="p-2 text-center"><FitScore score={r.fit_score} /></td>
                 <td className="p-2">
                   <Link href={`/influencers/${r.id}`} className="font-medium hover:underline">{r.name}</Link>
                   <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-500">
                     @{r.handle}
-                    {r.worked_before && <Badge tone="green">Worked with us</Badge>}
+                    {r.worked_before && <Badge tone="green"><svg className="mr-1 h-3 w-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8 3.2 3.2L13 4.8" /></svg>Worked with us</Badge>}
                     {r.is_blacklisted && <Badge tone="red">Blacklisted</Badge>}
                   </div>
                 </td>

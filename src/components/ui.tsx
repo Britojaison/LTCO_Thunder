@@ -1,11 +1,11 @@
 import type { ComponentProps, ReactNode } from "react";
 
 export const inputCls =
-  "min-w-0 w-full rounded-xl border border-[#eceef2] bg-white px-3 py-2 text-sm outline-none transition focus:border-[#ff6b2b] focus:ring-2 focus:ring-orange-100 disabled:bg-zinc-100";
+  "min-w-0 w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none transition focus:border-[#ff6b2b] focus:ring-2 focus:ring-orange-100 disabled:bg-zinc-100";
 export const btnPrimary =
-  "inline-flex items-center justify-center rounded-xl bg-[#ff5a1f] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ef4d19] hover:shadow-md disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ea650d] hover:shadow-md disabled:opacity-50";
 export const btnSecondary =
-  "inline-flex items-center justify-center rounded-xl border border-[#eceef2] bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-[#e5e7eb] bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50";
 export const btnDanger =
   "inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50";
 
@@ -35,9 +35,9 @@ export function Card({ title, actions, children, className = "" }: { title?: str
 
 export function Badge({ children, tone = "zinc" }: { children: ReactNode; tone?: "zinc" | "red" | "green" | "amber" }) {
   const tones = {
-    zinc: "bg-zinc-100 text-zinc-700",
+    zinc: "bg-slate-100 text-slate-700",
     red: "bg-red-50 text-red-700",
-    green: "bg-emerald-50 text-emerald-700",
+    green: "border border-emerald-100 bg-emerald-50 text-emerald-700",
     amber: "bg-amber-50 text-amber-800",
   };
   return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${tones[tone]}`}>{children}</span>;
@@ -50,6 +50,6 @@ export function Input(props: ComponentProps<"input">) {
 export function FitScore({ score }: { score: number | string | null }) {
   if (score === null || score === undefined) return <span className="text-xs text-zinc-400">–</span>;
   const n = Number(score);
-  const tone = n >= 70 ? "bg-emerald-100 text-emerald-800" : n >= 45 ? "bg-amber-100 text-amber-800" : "bg-zinc-100 text-zinc-600";
-  return <span className={`inline-flex w-10 justify-center rounded-md py-0.5 text-xs font-semibold ${tone}`}>{n}</span>;
+  const tone = n >= 70 ? "bg-emerald-100 text-emerald-800" : n >= 45 ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600";
+  return <span className={`inline-flex w-10 justify-center rounded-full py-0.5 text-xs font-semibold ${tone}`}>{n}</span>;
 }

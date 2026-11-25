@@ -6,15 +6,16 @@ import { dateIN, inr } from "@/lib/format";
 type Row = Awaited<ReturnType<typeof listCampaigns>>[number];
 
 export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[]; showBrand?: boolean }) {
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   const total = campaigns.reduce(
     (t, c) => ({ client: t.client + c.fin.cost_to_client, agency: t.agency + c.fin.cost_to_agency, profit: t.profit + c.fin.profit, n: t.n + c.fin.influencer_count, missing: t.missing + c.fin.missing_payout }),
     { client: 0, agency: 0, profit: 0, n: 0, missing: 0 },
   );
   const pct = total.client > 0 ? `${((total.profit / total.client) * 100).toFixed(1)}%` : "–";
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+    <div className="overflow-x-auto rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
       <table className="w-full text-sm">
-        <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500">
+        <thead className="border-b border-[#e5e7eb] bg-[#f8f9fb] text-left text-xs text-slate-500">
           <tr>
             <th className="p-2">Campaign</th>
             {showBrand && <th className="p-2">Brand</th>}
@@ -30,11 +31,11 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
         </thead>
         <tbody>
           {campaigns.map((c) => (
-            <tr key={c.id} className="border-b border-zinc-100">
-              <td className="p-2"><Link href={`/campaigns/${c.id}`} className="font-medium hover:underline">{c.name}</Link></td>
-              {showBrand && <td className="p-2 text-zinc-600"><Link href={`/brands/${c.brand_id}`} className="hover:underline">{c.brand}</Link></td>}
+            <tr key={c.id} className="border-b border-zinc-100 hover:bg-slate-50/70">
+              <td className="p-2"><Link href={`/campaigns/${c.id}`} className="font-medium text-slate-800 hover:text-[#f97316]">{c.name}</Link></td>
+              {showBrand && <td className="p-2 text-zinc-600"><Link href={`/brands/${c.brand_id}`} className="hover:text-[#f97316]">{c.brand}</Link></td>}
               <td className="whitespace-nowrap p-2 text-zinc-600">{c.poc ?? <span className="text-amber-700">Not set</span>}</td>
-              <td className="p-2"><StatusBadge status={c.status} /></td>
+              <td className="p-2"><StatusBadge status={c.status} ended={c.status === "live" && Boolean(c.end_date && c.end_date < today)} /></td>
               <td className="whitespace-nowrap p-2 text-zinc-600">{c.start_date ? `${dateIN(c.start_date)} – ${dateIN(c.end_date)}` : "–"}</td>
               <td className="p-2 text-right tabular-nums">{c.fin.influencer_count}</td>
               <td className="p-2 text-right tabular-nums">{inr(c.fin.cost_to_client)}</td>
@@ -56,7 +57,7 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
           ))}
         </tbody>
         {campaigns.length > 1 && (
-          <tfoot className="bg-zinc-50 font-medium">
+          <tfoot className="bg-[#f8f9fb] font-medium">
             <tr>
               <td className="p-2" colSpan={showBrand ? 5 : 4}>Total</td>
               <td className="p-2 text-right tabular-nums">{total.n}</td>

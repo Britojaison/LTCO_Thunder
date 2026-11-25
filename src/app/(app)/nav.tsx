@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 const ITEMS = [
   { href: "/influencers", label: "Influencers", icon: "influencers" },
@@ -42,12 +43,12 @@ function NavIcon({ name }: { name: (typeof ITEMS)[number]["icon"] }) {
 
 function SignOut() {
   return (
-    <form action="/auth/signout" method="post" className="mt-1 w-full border-t border-zinc-200 pt-2">
-      <button type="submit" title="Sign out" className="mx-auto flex h-10 w-10 items-center justify-center gap-0 whitespace-nowrap rounded-xl p-0 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 md:group-hover/sidebar:mx-0 md:group-hover/sidebar:w-full md:group-hover/sidebar:justify-start md:group-hover/sidebar:gap-3 md:group-hover/sidebar:rounded-md md:group-hover/sidebar:px-3">
-        <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <form action="/auth/signout" method="post" className="mt-2 w-full border-t border-[#f4dfd0] pt-2">
+      <button type="submit" title="Sign out" className="flex h-10 w-10 items-center justify-start gap-0 overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm text-slate-600 transition-colors hover:bg-[#ffe7d5] hover:text-[#111827] md:w-full">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" /><path d="M14 16l4-4-4-4M18 12H9" />
-        </svg>
-        <span className="md:max-w-0 md:overflow-hidden md:opacity-0 md:transition-[max-width,opacity] md:duration-200 md:group-hover/sidebar:max-w-40 md:group-hover/sidebar:opacity-100">Sign out</span>
+        </svg></span>
+        <span className="block max-w-0 shrink-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-200 md:group-hover/sidebar:max-w-32 md:group-hover/sidebar:translate-x-0 md:group-hover/sidebar:opacity-100">Sign out</span>
       </button>
     </form>
   );
@@ -55,42 +56,47 @@ function SignOut() {
 
 function NavItems({ path }: { path?: string }) {
   return (
-    <div className="flex gap-1 md:w-full md:flex-col md:items-center md:group-hover/sidebar:items-start">
+    <div className="flex flex-wrap gap-1 md:w-full md:flex-col md:flex-nowrap md:gap-1 md:pt-3">
       {ITEMS.map((item) => {
         const active = path !== undefined && (path === item.href || path.startsWith(item.href + "/"));
         return (
           <Link key={item.href} href={item.href} title={item.label}
             aria-current={active ? "page" : undefined}
-            className={`flex h-10 w-10 items-center justify-center gap-0 whitespace-nowrap rounded-xl p-0 text-sm transition-[background-color,color,box-shadow,width] duration-200 md:group-hover/sidebar:w-full md:group-hover/sidebar:justify-start md:group-hover/sidebar:gap-3 md:group-hover/sidebar:rounded-2xl md:group-hover/sidebar:px-3 ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-start overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm transition-colors md:w-full ${
               active
-                ? "bg-[#ff5a1f] text-white shadow-[0_4px_12px_rgba(255,90,31,0.24)]"
-                : "text-zinc-700 hover:bg-zinc-200"
+                ? "bg-[#f97316] text-white shadow-[0_4px_12px_rgba(249,115,22,0.24)]"
+                : "text-slate-600 hover:bg-[#ffe7d5]"
             }`}>
-            <NavIcon name={item.icon} />
-            <span className="md:max-w-0 md:overflow-hidden md:opacity-0 md:transition-[max-width,opacity] md:duration-200 md:group-hover/sidebar:max-w-40 md:group-hover/sidebar:opacity-100">{item.label}</span>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center md:w-16"><NavIcon name={item.icon} /></span>
+            <span className="block max-w-0 shrink-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-200 md:group-hover/sidebar:max-w-40 md:group-hover/sidebar:translate-x-0 md:group-hover/sidebar:opacity-100">{item.label}</span>
           </Link>
         );
       })}
+      <SignOut />
     </div>
   );
 }
 
 /** Links shown while the current path streams in. */
-export function NavFallback() {
+export function NavFallback({ footer }: { footer?: ReactNode }) {
   return (
-    <nav aria-label="Main navigation" className="flex min-w-0 flex-col md:w-full md:flex-1">
+    <nav aria-label="Main navigation" className="flex min-w-0 flex-col md:min-h-0 md:w-full md:flex-1">
       <NavItems />
-      <SignOut />
+      <div className="mt-auto w-full shrink-0">
+        {footer}
+      </div>
     </nav>
   );
 }
 
-export function Nav() {
+export function Nav({ footer }: { footer?: ReactNode }) {
   const path = usePathname();
   return (
-    <nav aria-label="Main navigation" className="flex min-w-0 flex-col md:w-full md:flex-1">
+    <nav aria-label="Main navigation" className="flex min-w-0 flex-col md:min-h-0 md:w-full md:flex-1">
       <NavItems path={path} />
-      <SignOut />
+      <div className="mt-auto w-full shrink-0">
+        {footer}
+      </div>
     </nav>
   );
 }

@@ -10,6 +10,7 @@ import { CampaignCard } from "./campaign-cards";
 import { listDueSnapshots } from "@/lib/services/posts";
 import { DueSnapshots } from "@/components/due-snapshots";
 import { inr } from "@/lib/format";
+import { AnimatedDropdown } from "@/components/animated-dropdown";
 
 export const metadata = { title: "Campaigns" };
 
@@ -21,10 +22,11 @@ export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">)
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#18191c]">Campaigns</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f97316]">Campaign management</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#111827]">Campaigns</h1>
           <p className="mt-1 text-sm text-[#6b7280]">Track your creator partnerships and campaign performance.</p>
         </div>
-        <Link href="/campaigns/new" className={btnPrimary}>New campaign</Link>
+        <Link href="/campaigns/new" className={btnPrimary}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>New campaign</Link>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><List searchParams={searchParams} /></Suspense>
     </section>
@@ -57,7 +59,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
     const s = p.toString();
     return `/campaigns${s ? `?${s}` : ""}`;
   };
-  const pill = (on: boolean) => `rounded-full px-3 py-1.5 ${on ? "bg-[#ff5a1f] text-white" : "text-zinc-600 hover:bg-white"}`;
+  const pill = (on: boolean) => `rounded-full px-3 py-1.5 transition ${on ? "bg-[#f97316] text-white shadow-sm" : "text-slate-600 hover:bg-white"}`;
   const pocTabs: [string, string][] = [["", "Everyone"], ["me", "Mine"],
     ...team.filter((m) => m.user_id !== user.id).map((m) => [m.user_id, memberName(m)!] as [string, string]), ["none", "No POC"]];
 
@@ -77,25 +79,28 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
 
   return (
     <>
-      <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-        <nav className="flex flex-wrap gap-1 text-sm">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <nav aria-label="Campaign status" className="flex flex-wrap gap-1 text-sm">
           {TABS.map(([key, label]) => <Link key={key} href={qs({ status: key })} className={pill(key === status)}>{label}</Link>)}
         </nav>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <nav className="flex flex-wrap items-center gap-1">
-            <span className="mr-1 text-xs text-zinc-500">POC</span>
-            {pocTabs.map(([key, label]) => <Link key={key || "all"} href={qs({ poc: key })} className={pill(key === poc)}>{label}</Link>)}
-          </nav>
-          <nav className="flex rounded-full border border-[#eceef2] bg-white p-0.5 text-xs shadow-sm">
-            <Link href={qs({ view: "" })} className={`rounded-full px-3 py-1.5 ${view === "cards" ? "bg-[#ff5a1f] text-white" : "text-zinc-600"}`}>Cards</Link>
-            <Link href={qs({ view: "table" })} className={`rounded-full px-3 py-1.5 ${view === "table" ? "bg-[#ff5a1f] text-white" : "text-zinc-600"}`}>Table</Link>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm xl:justify-end">
+          <AnimatedDropdown label={`POC: ${pocTabs.find(([key]) => key === poc)?.[1] ?? "Everyone"}`} ariaLabel="Filter by point of contact">
+            {pocTabs.map(([key, label]) => <Link key={key || "all"} href={qs({ poc: key })} role="menuitem" data-menu-item className={`block rounded-lg px-3 py-2 text-xs ${key === poc ? "bg-orange-50 font-semibold text-orange-700" : "text-slate-600 hover:bg-slate-50"}`}>{label}</Link>)}
+          </AnimatedDropdown>
+          <nav aria-label="Campaign view" className="flex rounded-full border border-[#e5e7eb] bg-white p-1 text-xs shadow-sm">
+            <Link href={qs({ view: "" })} aria-current={view === "cards" ? "page" : undefined} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${view === "cards" ? "bg-[#f97316] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
+              <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" /></svg>Cards
+            </Link>
+            <Link href={qs({ view: "table" })} aria-current={view === "table" ? "page" : undefined} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${view === "table" ? "bg-[#f97316] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
+              <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M2 3h12M2 7h12M2 11h12M2 14h12" /></svg>Table
+            </Link>
           </nav>
         </div>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map(([label, value, note], index) => (
-          <div key={label} className={index === 0 ? "rounded-2xl bg-gradient-to-br from-[#ff5a1f] to-[#ff7a37] px-4 py-3 text-white shadow-[0_8px_20px_rgba(255,90,31,0.18)]" : "rounded-2xl border border-[#eceef2] bg-white px-4 py-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]"}>
+          <div key={label} className={index === 0 ? "rounded-2xl bg-gradient-to-br from-[#f97316] to-[#fb923c] px-4 py-3 text-white shadow-[0_8px_20px_rgba(249,115,22,0.16)]" : "rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]"}>
             <dt className={index === 0 ? "text-xs text-white/80" : "text-xs text-zinc-500"}>{label}</dt>
             <dd className="mt-0.5 text-xl font-semibold tabular-nums">{value}</dd>
             {note && <p className={index === 0 ? "text-[11px] text-white/75" : "text-[11px] text-amber-700"}>{note}</p>}
@@ -131,9 +136,9 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
         title={mine ? "My snapshots due" : "All snapshots due"}
         actions={
           <span className="flex gap-1 text-xs">
-            <Link href={qs({ due: "" })} className={mine ? "font-semibold" : "text-zinc-500 underline"}>Mine</Link>
+            <Link href={qs({ due: "" })} className={`rounded-full px-3 py-1.5 ${mine ? "bg-[#f97316] font-semibold text-white" : "text-slate-600 hover:bg-slate-50"}`}>Mine</Link>
             <span className="text-zinc-300">|</span>
-            <Link href={qs({ due: "all" })} className={!mine ? "font-semibold" : "text-zinc-500 underline"}>Everyone</Link>
+            <Link href={qs({ due: "all" })} className={`rounded-full px-3 py-1.5 ${!mine ? "bg-[#f97316] font-semibold text-white" : "text-slate-600 hover:bg-slate-50"}`}>Everyone</Link>
           </span>
         }
       />

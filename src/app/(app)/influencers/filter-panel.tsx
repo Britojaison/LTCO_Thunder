@@ -12,26 +12,26 @@ export function FilterPanel({ filters: f, vocab, sort }: { filters: Filters; voc
     <form action="/influencers" method="get" className="space-y-4">
       <input type="hidden" name="sort" value={sort} />
       <Field label="Name or handle">
-        <input name="q" defaultValue={f.q ?? ""} className={inputCls} />
+        <input name="q" defaultValue={f.q ?? ""} placeholder="Search..." className={inputCls} />
       </Field>
       <Field label="Niches" hint="Comma separated">
-        <input name="niches" defaultValue={join(f.niches)} list="niche-list" className={inputCls} />
+        <input name="niches" defaultValue={join(f.niches)} placeholder="Comma separated" list="niche-list" className={inputCls} />
         <datalist id="niche-list">{vocab.niches.map((n) => <option key={n} value={n} />)}</datalist>
       </Field>
       <div className="grid grid-cols-2 gap-2">
         <Field label="Cities">
-          <input name="cities" defaultValue={join(f.cities)} list="city-list" className={inputCls} />
+          <input name="cities" defaultValue={join(f.cities)} placeholder="e.g. Delhi" list="city-list" className={inputCls} />
           <datalist id="city-list">{vocab.cities.map((n) => <option key={n} value={n} />)}</datalist>
         </Field>
         <Field label="States">
-          <input name="states" defaultValue={join(f.states)} className={inputCls} />
+          <input name="states" defaultValue={join(f.states)} placeholder="e.g. NCR" className={inputCls} />
         </Field>
       </div>
       <fieldset>
         <legend className="text-xs font-medium text-zinc-600">Languages</legend>
-        <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-2">
+        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2.5">
           {vocab.languages.map((l) => (
-            <label key={l} className="flex min-w-0 items-center gap-2 text-sm">
+            <label key={l} className="flex min-w-0 items-center gap-2 text-[13px] text-slate-600">
               <input className="shrink-0" type="checkbox" name="languages" value={l} defaultChecked={f.languages?.includes(l)} /> {cap(l)}
             </label>
           ))}
@@ -39,9 +39,9 @@ export function FilterPanel({ filters: f, vocab, sort }: { filters: Filters; voc
       </fieldset>
       <fieldset>
         <legend className="text-xs font-medium text-zinc-600">Formats offered</legend>
-        <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-2">
+        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2.5">
           {vocab.formats.map((l) => (
-            <label key={l} className="flex min-w-0 items-center gap-2 text-sm">
+            <label key={l} className="flex min-w-0 items-center gap-2 text-[13px] text-slate-600">
               <input className="shrink-0" type="checkbox" name="formats" value={l} defaultChecked={f.formats?.includes(l)} /> {cap(l)}
             </label>
           ))}

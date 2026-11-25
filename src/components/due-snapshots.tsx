@@ -17,10 +17,10 @@ export function DueSnapshots({ rows, showCampaign = true, title = "Snapshots due
               <li key={`${r.post_id}-${r.snapshot_point}`} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                 <span className="min-w-0">
                   <Badge tone={late ? "red" : "amber"}>{r.snapshot_point}</Badge>{" "}
-                  <Link href={`/campaigns/${r.campaign_id}/deals/${r.deal_id}`} className="font-medium text-blue-700 hover:underline">{r.influencer?.name ?? "Influencer"}</Link>
+                  <Link href={`/campaigns/${r.campaign_id}/deals/${r.deal_id}`} className="font-medium text-slate-800 hover:text-[#f97316]">{r.influencer?.name ?? "Influencer"}</Link>
                   <span className="text-zinc-500"> · {r.format}{showCampaign && r.campaign ? ` · ${r.campaign}` : ""}</span>
                 </span>
-                <span className={`text-xs ${late ? "text-red-700" : "text-amber-700"}`}>{late ? (days > 0 ? `${days} day${days > 1 ? "s" : ""} overdue` : "due today") : "due within a day"}</span>
+                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${late ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-800"}`}>{late ? (days > 0 ? `${days} day${days > 1 ? "s" : ""} overdue` : "due today") : "due within a day"}</span>
               </li>
             );
           })}

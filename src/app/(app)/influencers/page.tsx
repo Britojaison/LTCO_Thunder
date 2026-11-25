@@ -59,11 +59,11 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
           <p className="mt-1 text-sm text-[#6b7280]">Discover, filter, and manage your creator relationships.</p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-11 items-center rounded-full border border-[#eceef2] bg-white px-3 text-xs font-medium text-zinc-600">{chips.length ? `${chips.length} active filters` : "All influencers"}</span>
+          <Link href="/influencers" aria-current="page" className={`${btnSecondary} h-11 whitespace-nowrap`}>All influencers</Link>
           <Link href="/influencers/pending" className={`${btnSecondary} h-11 whitespace-nowrap`}>
             Review queue{pending ? ` (${pending})` : ""}
           </Link>
-          <Link href="/influencers/new" className={`${btnPrimary} h-11 w-[152px] whitespace-nowrap`}>Add influencer</Link>
+          <Link href="/influencers/new" className={`${btnPrimary} h-11 whitespace-nowrap`}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>Add Influencer</Link>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
 
       <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
         <aside className="space-y-4">
-          <Card title="Filters"><FilterPanel filters={filters} vocab={vocab} sort={sort} /></Card>
+          <Card title="Filters" actions={<span className="flex items-center gap-2 text-zinc-400" aria-hidden="true"><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-6.5 7.5V19l-3 1v-7.5L4 5Z" /></svg><span className="text-xs">⌃</span></span>}><FilterPanel filters={filters} vocab={vocab} sort={sort} /></Card>
           <Card title="Saved searches">
             {saved.length === 0 && <p className="mb-2 text-xs text-zinc-400">None yet.</p>}
             <ul className="mb-3 space-y-1">

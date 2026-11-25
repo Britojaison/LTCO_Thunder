@@ -5,24 +5,20 @@ import { AppHeader, AppHeaderFallback } from "./app-header";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex flex-1 flex-col md:flex-row">
-      <aside className="group/sidebar relative z-20 border-b border-zinc-200 bg-white p-3 md:fixed md:inset-y-0 md:left-0 md:flex md:h-dvh md:w-14 md:flex-col md:items-center md:overflow-hidden md:border-b-0 md:border-r md:px-2 md:py-3 md:transition-[width,box-shadow] md:duration-200 md:hover:w-60 md:hover:items-start md:hover:shadow-xl">
-        <div className="mb-3 flex items-center justify-between md:mb-0 md:block md:w-full">
-          <div className="relative mb-0 flex h-9 items-center md:mb-8 md:w-full md:justify-center md:transition-[margin] md:duration-200 md:group-hover/sidebar:mb-0">
-            <img src="/brand-logo.jpg" alt="88GB" className="hidden h-9 w-12 object-contain md:block md:h-8 md:w-10 md:transition-opacity md:duration-200 md:group-hover/sidebar:opacity-0" />
-            <p className="text-lg font-semibold md:absolute md:left-0 md:opacity-0 md:transition-opacity md:duration-200 md:group-hover/sidebar:opacity-100">Thunder</p>
+    <div className="flex flex-1 flex-col overflow-x-clip md:flex-row">
+      <aside className="peer/sidebar group/sidebar relative z-20 border-b border-[#f4dfd0] bg-[#fff4eb] p-3 md:fixed md:inset-y-0 md:left-0 md:flex md:h-dvh md:w-16 md:flex-col md:items-start md:overflow-visible md:border-b-0 md:border-r md:p-0 md:transition-[width] md:duration-[250ms] md:ease-[cubic-bezier(0.16,1,0.3,1)] md:hover:w-60 md:hover:shadow-xl">
+        <div className="relative flex w-full shrink-0 flex-col items-start gap-3 pb-3 md:h-14 md:flex-row md:items-center md:gap-0 md:pb-0">
+          <div className="flex h-12 w-16 shrink-0 items-center justify-center md:h-14">
+            <img src="/brand-logo.jpg" alt="88GB" className="hidden h-8 w-10 object-contain mix-blend-multiply md:block" />
+            <p className="text-lg font-semibold md:hidden">Thunder</p>
           </div>
-          <div className="md:mb-0 md:max-h-0 md:overflow-hidden md:opacity-0 md:transition-[max-height,margin,opacity] md:duration-200 md:group-hover/sidebar:mb-6 md:group-hover/sidebar:max-h-40 md:group-hover/sidebar:opacity-100">
-            <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}>
-              <WorkspaceSwitcher />
-            </Suspense>
-          </div>
+          <p className="pointer-events-none absolute left-16 whitespace-nowrap text-lg font-semibold text-[#111827] opacity-0 transition-[opacity,transform] duration-200 -translate-x-1.5 group-hover/sidebar:translate-x-0 group-hover/sidebar:opacity-100">Thunder</p>
         </div>
         <Suspense fallback={<NavFallback />}>
-          <Nav />
+          <Nav footer={<WorkspaceSwitcher />} />
         </Suspense>
       </aside>
-      <main className="app-main min-w-0 flex-1 p-4 md:ml-14 md:p-8">
+      <main className="app-main min-w-0 flex-1 overflow-x-clip p-4 transition-[margin-left] duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:ml-16 md:p-8 md:peer-hover/sidebar:ml-60">
         <Suspense fallback={<AppHeaderFallback />}>
           <AppHeader />
         </Suspense>
