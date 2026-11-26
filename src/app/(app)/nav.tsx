@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { SignOutControl } from "./sign-out-control";
 
 const ITEMS = [
   { href: "/influencers", label: "Influencers", icon: "influencers" },
@@ -41,19 +42,6 @@ function NavIcon({ name }: { name: (typeof ITEMS)[number]["icon"] }) {
   }
 }
 
-function SignOut() {
-  return (
-    <form action="/auth/signout" method="post" className="mt-2 w-full border-t border-[#f4dfd0] pt-2">
-      <button type="submit" title="Sign out" className="flex h-10 w-10 items-center justify-start gap-0 overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm text-slate-600 transition-colors hover:bg-[#ffe7d5] hover:text-[#111827] md:w-full">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" /><path d="M14 16l4-4-4-4M18 12H9" />
-        </svg></span>
-        <span className="block max-w-0 shrink-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-200 md:group-hover/sidebar:max-w-32 md:group-hover/sidebar:translate-x-0 md:group-hover/sidebar:opacity-100">Sign out</span>
-      </button>
-    </form>
-  );
-}
-
 function NavItems({ path }: { path?: string }) {
   return (
     <div className="flex flex-wrap gap-1 md:w-full md:flex-col md:flex-nowrap md:gap-1 md:pt-3">
@@ -62,17 +50,23 @@ function NavItems({ path }: { path?: string }) {
         return (
           <Link key={item.href} href={item.href} title={item.label}
             aria-current={active ? "page" : undefined}
-            className={`flex h-10 w-10 shrink-0 items-center justify-start overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm transition-colors md:w-full ${
+            className={`group/item flex h-10 w-10 shrink-0 items-center justify-start overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm transition-colors md:w-full ${
               active
-                ? "bg-[#f97316] text-white shadow-[0_4px_12px_rgba(249,115,22,0.24)]"
-                : "text-slate-600 hover:bg-[#ffe7d5]"
+                ? "font-medium text-[#111827] md:group-hover/sidebar:bg-[#f97316] md:group-hover/sidebar:text-white md:group-hover/sidebar:shadow-[0_4px_12px_rgba(249,115,22,0.24)]"
+                : "text-slate-600 md:hover:group-hover/sidebar:bg-[#ffe7d5]"
             }`}>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center md:w-16"><NavIcon name={item.icon} /></span>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center md:w-16">
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                active
+                  ? "bg-[#f97316] text-white shadow-[0_4px_12px_rgba(249,115,22,0.24)] md:group-hover/sidebar:shadow-none"
+                  : "group-hover/item:bg-[#ffe7d5] md:group-hover/sidebar:bg-transparent"
+              }`}><NavIcon name={item.icon} /></span>
+            </span>
             <span className="block max-w-0 shrink-0 -translate-x-1.5 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-200 md:group-hover/sidebar:max-w-40 md:group-hover/sidebar:translate-x-0 md:group-hover/sidebar:opacity-100">{item.label}</span>
           </Link>
         );
       })}
-      <SignOut />
+      <div className="mt-2 w-full border-t border-[#f4dfd0] pt-2"><SignOutControl /></div>
     </div>
   );
 }
