@@ -20,7 +20,9 @@ export function AnimatedDropdown({ label, children, ariaLabel }: { label: string
     media.add("(prefers-reduced-motion: reduce)", () => { reducedMotion.current = true; });
     media.add("(prefers-reduced-motion: no-preference)", () => { reducedMotion.current = false; });
     gsap.set(menu.current, { autoAlpha: 0, y: 6, scale: 0.97, transformOrigin: "top right" });
-    gsap.set(menu.current?.querySelectorAll<HTMLElement>("[data-menu-item]"), { autoAlpha: 0, y: 6 });
+    if (menu.current) {
+      gsap.set(menu.current.querySelectorAll<HTMLElement>("[data-menu-item]"), { autoAlpha: 0, y: 6 });
+    }
     return () => media.revert();
   }, { scope: root });
 

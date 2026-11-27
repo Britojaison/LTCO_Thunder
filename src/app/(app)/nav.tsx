@@ -10,7 +10,6 @@ const ITEMS = [
   { href: "/campaigns", label: "Campaigns", icon: "campaigns" },
   { href: "/brands", label: "Brands", icon: "brands" },
   { href: "/reports", label: "Reports", icon: "reports" },
-  { href: "/import", label: "Import", icon: "import" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ] as const;
 
@@ -35,8 +34,6 @@ function NavIcon({ name }: { name: (typeof ITEMS)[number]["icon"] }) {
       return <svg {...shared}><path d="M3 21V8l7-4v17M10 21V3h11v18M1.5 21h21" /><path d="M6 9h.01M6 12h.01M6 15h.01M14 7h.01M17 7h.01M14 11h.01M17 11h.01M14 15h.01M17 15h.01" /></svg>;
     case "reports":
       return <svg {...shared}><path d="M4 4v16h17" /><path d="M8 16v-4M13 16V8M18 16v-7" /></svg>;
-    case "import":
-      return <svg {...shared}><path d="M12 14V3m0 0L8 7m4-4 4 4" /><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" /></svg>;
     case "settings":
       return <svg {...shared}><path d="M5 4v16M12 4v16M19 4v16" /><circle cx="5" cy="9" r="2" fill="currentColor" stroke="none" /><circle cx="12" cy="15" r="2" fill="currentColor" stroke="none" /><circle cx="19" cy="7" r="2" fill="currentColor" stroke="none" /></svg>;
   }

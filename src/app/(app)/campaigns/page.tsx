@@ -4,7 +4,7 @@ import { requireWorkspace } from "@/lib/auth";
 import { listCampaigns, pipelineMix, memberName, CAMPAIGN_STATUSES, type CampaignStatus } from "@/lib/services/campaigns";
 import { listMembers } from "@/lib/services/team";
 import { signedUrls } from "@/lib/services/storage";
-import { btnPrimary, Card } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { CampaignTable } from "./campaign-table";
 import { CampaignCard } from "./campaign-cards";
 import { listDueSnapshots } from "@/lib/services/posts";
@@ -14,19 +14,24 @@ import { AnimatedDropdown } from "@/components/animated-dropdown";
 
 export const metadata = { title: "Campaigns" };
 
+const headerButton = "inline-flex h-10 w-fit shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-[#ff5a1f] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ea650d] hover:shadow-md";
+
 const TABS = [["", "Active"], ...CAMPAIGN_STATUSES.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1)]), ["all", "All"]];
 const SECTIONS: [CampaignStatus, string][] = [["live", "Live"], ["planning", "Planning"], ["completed", "Completed"], ["archived", "Archived"]];
 
 export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">) {
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+      <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+        <div className="min-w-0 self-start sm:self-auto">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f97316]">Campaign management</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#111827]">Campaigns</h1>
           <p className="mt-1 text-sm text-[#6b7280]">Track your creator partnerships and campaign performance.</p>
         </div>
-        <Link href="/campaigns/new" className={btnPrimary}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>New campaign</Link>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <Link href="/import" className={headerButton}>Import</Link>
+          <Link href="/campaigns/new" className={headerButton}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>New campaign</Link>
+        </div>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><List searchParams={searchParams} /></Suspense>
     </section>
