@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { requireWorkspace } from "@/lib/auth";
 import { formToDefaults, formToObject } from "@/lib/form";
 import { ServiceError } from "@/lib/services/errors";
-import { createCampaign, updateCampaign, setCampaignStatus, setCampaignPoc, deleteCampaign, addInfluencersToCampaign, quickAddToCampaign } from "@/lib/services/campaigns";
+import { createCampaign, updateCampaign, setCampaignStatus, setCampaignPoc, addInfluencersToCampaign, quickAddToCampaign } from "@/lib/services/campaigns";
 
 export type FormState = { error?: string; values?: Record<string, string | string[]> };
 const message = (e: unknown) => (e instanceof ServiceError ? e.message : "Something went wrong. Please try again.");
@@ -52,16 +52,6 @@ export async function addFromPreviousAction(campaignId: string, influencerIds: s
   } catch (e) {
     return { error: message(e) };
   }
-}
-
-export async function deleteCampaignAction(id: string): Promise<{ error?: string }> {
-  const { db, workspace } = await requireWorkspace();
-  try {
-    await deleteCampaign(db, workspace.id, id);
-  } catch (e) {
-    return { error: message(e) };
-  }
-  redirect("/campaigns");
 }
 
 export async function addToThisCampaignAction(campaignId: string, influencerIds: string[]): Promise<{ ok?: string; error?: string }> {

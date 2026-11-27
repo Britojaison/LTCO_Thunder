@@ -6,17 +6,21 @@ import { getCampaign, campaignOverview, campaignActivity, memberName } from "@/l
 import { listMembers } from "@/lib/services/team";
 import { signedUrls } from "@/lib/services/storage";
 import { ServiceError } from "@/lib/services/errors";
-import { btnPrimary, btnSecondary, Card, inputCls } from "@/components/ui";
-import { ConfirmButton } from "@/components/confirm-button";
+import { Card } from "@/components/ui";
 import { MoneyCards } from "@/components/money";
 import { cap, compact, dateIN, dateTimeIN, inr } from "@/lib/format";
 import { StatusBadge } from "../status-badge";
 import { CampaignTabs } from "../campaign-tabs";
 import { brandProducts } from "@/lib/services/deals";
 import { QuickAdd } from "../quick-add";
-import { deleteCampaignAction, setPocAction, setStatusAction } from "../actions";
+import { setPocAction, setStatusAction } from "../actions";
+import { AutoSubmitSelect } from "./auto-submit-select";
 
 export const metadata = { title: "Campaign" };
+
+const toolbarSelect = "h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700";
+const toolbarButton = "inline-flex h-9 items-center justify-center rounded-lg text-sm font-medium";
+const toolbarSecondary = `${toolbarButton} border border-slate-200 bg-white px-3.5 text-slate-700 hover:bg-slate-50`;
 
 export default function CampaignPage({ params }: PageProps<"/campaigns/[id]">) {
   return <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><Overview params={params} /></Suspense>;
@@ -41,7 +45,7 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
     <section className="space-y-4">
       <Link href="/campaigns" className="text-sm text-zinc-500 hover:underline">← Campaigns</Link>
 
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {logo && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -56,25 +60,22 @@ async function Overview({ params }: { params: PageProps<"/campaigns/[id]">["para
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <form action={setPocAction.bind(null, id)} className="flex items-center gap-1">
-            <label htmlFor="poc" className="text-xs text-zinc-500">POC</label>
-            <select id="poc" name="poc_id" defaultValue={campaign.poc_id ?? ""} className={`${inputCls} w-auto py-1.5`}>
+        <div className="flex flex-wrap items-center gap-2.5 whitespace-nowrap">
+          <form action={setPocAction.bind(null, id)} className="flex items-center gap-2.5">
+            <label htmlFor="poc" className="inline-flex h-9 items-center text-xs font-medium text-slate-500">POC</label>
+            <AutoSubmitSelect key={campaign.poc_id ?? ""} id="poc" name="poc_id" defaultValue={campaign.poc_id ?? ""} className={toolbarSelect}>
               <option value="">Not set</option>
               {team.map((m) => <option key={m.user_id} value={m.user_id}>{memberName(m)}</option>)}
-            </select>
-            <button className={btnSecondary}>Set</button>
+            </AutoSubmitSelect>
           </form>
-          <form action={setStatusAction.bind(null, id)} className="flex gap-1">
-            <select name="status" defaultValue={campaign.status} className={`${inputCls} w-auto py-1.5`}>
+          <form action={setStatusAction.bind(null, id)} className="flex items-center gap-2.5">
+            <AutoSubmitSelect key={campaign.status} name="status" aria-label="Campaign status" defaultValue={campaign.status} className={toolbarSelect}>
               <option value="planning">Planning</option><option value="live">Live</option>
               <option value="completed">Completed</option><option value="archived">Archived</option>
-            </select>
-            <button className={btnSecondary}>Update</button>
+            </AutoSubmitSelect>
           </form>
-          <Link href={`/campaigns/${id}/add`} className={btnPrimary}>Add influencers</Link>
-          <Link href={`/campaigns/${id}/edit`} className={btnSecondary}>Edit</Link>
-          <ConfirmButton label="Delete" confirmText="Delete this campaign?" action={deleteCampaignAction.bind(null, id)} />
+          <Link href={`/campaigns/${id}/add`} className={`${toolbarButton} bg-[#ff5a1f] px-4 text-white hover:bg-[#e64a13]`}>Add influencers</Link>
+          <Link href={`/campaigns/${id}/edit`} className={toolbarSecondary}>Edit</Link>
         </div>
       </div>
 
