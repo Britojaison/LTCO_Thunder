@@ -26,7 +26,10 @@ async function PrintView({ params }: { params: PageProps<"/print/reports/[report
     if (e instanceof ServiceError && e.code === "not_found") notFound();
     throw e;
   });
-  const data = await loadReportData(db, workspace.id, report.campaign_id, 24 * 3600);
+  const data = await loadReportData(db, workspace.id, report.campaign_id, 24 * 3600, { includeDeletedCampaign: true }).catch((e) => {
+    if (e instanceof ServiceError && e.code === "not_found") notFound();
+    throw e;
+  });
   const file = `${data.brand.name} - ${report.config.title || data.campaign.name}`;
   return (
     <>

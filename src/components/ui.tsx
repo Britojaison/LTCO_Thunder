@@ -1,24 +1,24 @@
 import type { ComponentProps, ReactNode } from "react";
 
 const inputBase =
-  "min-w-0 w-full rounded-xl border border-white/90 bg-white/70 px-3 text-sm text-zinc-800 shadow-inner placeholder:text-zinc-400 outline-none backdrop-blur-sm transition focus:border-violet-300 focus:ring-2 focus:ring-violet-100 disabled:bg-zinc-100/70";
+  "min-w-0 w-full rounded-xl border border-slate-200/80 bg-white/75 px-3 text-sm text-slate-900 shadow-inner placeholder:text-slate-500 outline-none backdrop-blur-sm transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 disabled:bg-slate-100/70";
 export const inputCls = `${inputBase} py-2`;
 export const compactInputCls = `${inputBase} h-9 py-1.5`;
 export const filterSelectCls =
-  "h-10 min-w-0 w-full rounded-xl border border-white/80 bg-white/75 px-3.5 text-sm text-slate-700 outline-none transition-colors hover:bg-white/90 focus:border-violet-300 focus:ring-2 focus:ring-violet-100";
+  "h-10 min-w-0 w-full rounded-xl border border-slate-200/80 bg-white/75 px-3.5 text-sm text-slate-700 outline-none transition-all hover:bg-white/90 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20";
 export const btnPrimary =
   "inline-flex items-center justify-center rounded-xl bg-[#ff5a1f] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e64a13] hover:shadow-md disabled:opacity-50";
 export const btnSecondary =
-  "inline-flex items-center justify-center rounded-xl border border-white/80 bg-white/65 px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-white/90 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-white/80 bg-white/65 px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-white/90 disabled:opacity-50";
 export const btnDanger =
   "inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block min-w-0">
-      <span className="text-xs font-medium text-zinc-600">{label}</span>
+      <span className="text-xs font-medium text-slate-600">{label}</span>
       <div className="mt-1">{children}</div>
-      {hint && <span className="mt-1 block text-xs text-zinc-400">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
     </label>
   );
 }
@@ -28,7 +28,7 @@ export function Card({ title, actions, children, className = "" }: { title?: str
     <section className={`glass-card p-5 ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex items-center justify-between gap-2">
-          {title && <h2 className="text-sm font-semibold text-zinc-800">{title}</h2>}
+          {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
           {actions}
         </div>
       )}
@@ -52,7 +52,7 @@ export function Input(props: ComponentProps<"input">) {
 }
 
 export function FitScore({ score }: { score: number | string | null }) {
-  if (score === null || score === undefined) return <span className="text-xs text-zinc-400">–</span>;
+  if (score === null || score === undefined) return <span className="text-xs text-slate-500">–</span>;
   const n = Number(score);
   const tone = n >= 70 ? "bg-emerald-100 text-emerald-800" : n >= 45 ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600";
   return <span className={`inline-flex w-10 justify-center rounded-full py-0.5 text-xs font-semibold ${tone}`}>{n}</span>;

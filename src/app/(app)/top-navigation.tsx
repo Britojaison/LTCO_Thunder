@@ -21,14 +21,14 @@ export function TopNavigationFallback() {
 
 function NavigationLinks({ pathname }: { pathname?: string }) {
   return (
-    <nav aria-label="Main navigation" className="flex min-w-0 items-center gap-1 overflow-x-auto rounded-full p-1">
+    <nav aria-label="Main navigation" className="flex min-h-9 min-w-0 items-center gap-1.5 rounded-full">
       {links.map(([href, label]) => {
         const active = pathname === href || pathname?.startsWith(`${href}/`);
         return (
           <Link key={href} href={href} aria-current={active ? "page" : undefined}
-            className={`shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-600 motion-safe:hover:-translate-y-px xl:px-4 ${active
-              ? "bg-gradient-to-r from-[#6c5ce7] to-[#4f46e5] text-white shadow-[0_8px_18px_rgba(79,70,229,0.24)]"
-              : "text-slate-600 hover:bg-white/80 hover:text-[#4f46e5] hover:shadow-sm"
+            className={`inline-flex h-9 shrink-0 items-center rounded-full px-4 py-1.5 text-[15px] font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#ff5a1f] ${active
+              ? "bg-[#ff5a1f] text-white shadow-sm"
+              : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
             }`}>
             {label}
           </Link>

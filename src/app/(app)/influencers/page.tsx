@@ -56,8 +56,8 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
       <div data-gsap-enter className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ff5a1f]">Creator network</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#18191c]">Influencers</h1>
-          <p className="mt-1 text-sm text-[#6b7280]">Discover, filter, and manage your creator relationships.</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">Influencers</h1>
+          <p className="mt-1 text-sm text-slate-500">Discover, filter, and manage your creator relationships.</p>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Link href="/influencers" aria-current="page" className={`${btnSecondary} h-11 whitespace-nowrap`}>All influencers</Link>
@@ -85,16 +85,16 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
 
       <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <aside data-gsap-enter className="min-w-0 space-y-4">
-          <Card title="Filters" actions={<span className="flex items-center gap-2 text-zinc-400" aria-hidden="true"><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-6.5 7.5V19l-3 1v-7.5L4 5Z" /></svg><span className="text-xs">⌃</span></span>}><FilterPanel filters={filters} vocab={vocab} sort={sort} /></Card>
+          <Card title="Filters" actions={<span className="flex items-center gap-2 text-slate-500" aria-hidden="true"><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-6.5 7.5V19l-3 1v-7.5L4 5Z" /></svg></span>}><FilterPanel filters={filters} vocab={vocab} sort={sort} /></Card>
           <Card title="Saved searches">
-            {saved.length === 0 && <p className="mb-2 text-xs text-zinc-400">None yet.</p>}
+            {saved.length === 0 && <p className="mb-2 text-xs text-slate-500">None yet.</p>}
             <ul className="mb-3 space-y-1">
               {saved.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-2 text-sm">
+                <li key={s.id} className="flex items-center justify-between gap-2 text-sm text-slate-800">
                   <Link href={`/influencers${filtersToQuery(s.filters)}`} className="truncate hover:underline">{s.name}</Link>
                   <form action={deleteSavedSearchAction}>
                     <input type="hidden" name="id" value={s.id} />
-                    <button className="text-xs text-zinc-400 hover:text-red-600" aria-label={`Delete ${s.name}`}>×</button>
+                    <button className="text-xs text-slate-500 hover:text-red-600" aria-label={`Delete ${s.name}`}>×</button>
                   </form>
                 </li>
               ))}
@@ -105,12 +105,12 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
 
         <div className="min-w-0 space-y-3">
           <div data-gsap-enter className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <p className="text-zinc-600">{total.toLocaleString("en-IN")} {total === 1 ? "match" : "matches"}</p>
+            <p className="font-medium text-slate-700">{total.toLocaleString("en-IN")} {total === 1 ? "match" : "matches"}</p>
             <div className="flex flex-wrap gap-1">
               {SORTS.map((s) => (
                 <Link key={s} href={link({ sort: s })}
                   aria-current={s === sort ? "true" : undefined}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${s === sort ? "bg-[#ff5a1f] text-white shadow-sm hover:bg-[#e64a13]" : "text-zinc-600 hover:bg-white/80 hover:shadow-sm"}`}>
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${s === sort ? "bg-[#ff5a1f] text-white shadow-sm hover:bg-[#e64a13]" : "text-slate-600 hover:bg-white/80 hover:shadow-sm"}`}>
                   {SORT_LABELS[s]}
                 </Link>
               ))}
@@ -119,7 +119,7 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
 
           {rows.length === 0 ? (
             <Card>
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-slate-600">
                 {chips.length ? "No influencers match these filters. Remove a chip to widen the search." : "No influencers yet."}
               </p>
               {!chips.length && <Link href="/influencers/new" className={`${btnPrimary} mt-3`}>Add your first influencer</Link>}
@@ -131,7 +131,7 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
           {pages > 1 && (
             <div className="flex items-center justify-between text-sm">
               {page > 1 ? <Link href={link({ page: String(page - 1) })} className={btnSecondary}>Previous</Link> : <span />}
-              <span className="text-zinc-500">Page {page} of {pages}</span>
+              <span className="text-slate-600">Page {page} of {pages}</span>
               {page < pages ? <Link href={link({ page: String(page + 1) })} className={btnSecondary}>Next</Link> : <span />}
             </div>
           )}

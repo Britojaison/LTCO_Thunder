@@ -66,9 +66,9 @@ export function SignOutControl({ variant = "sidebar" }: { variant?: "sidebar" | 
     <>
       <button ref={triggerRef} type="button" title="Sign out" aria-haspopup="dialog" aria-expanded={mounted}
         onClick={show}
-        className={variant === "topbar" ? "group/item flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/70 text-slate-600 transition hover:scale-[1.04] hover:bg-white hover:text-[#4f46e5]" : "group/item flex h-10 w-10 shrink-0 items-center justify-start gap-0 overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm text-slate-600 transition-colors hover:text-[#111827] md:w-full md:hover:group-hover/sidebar:bg-[#ffe7d5]"}>
-        <span className={variant === "topbar" ? "flex h-10 w-10 shrink-0 items-center justify-center" : "flex h-10 w-10 shrink-0 items-center justify-center md:w-16"}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors group-hover/item:bg-[#ffe7d5] md:group-hover/sidebar:bg-transparent">
+        className={variant === "topbar" ? "group/item flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200/70 bg-white/75 text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition hover:scale-[1.04] hover:bg-white hover:text-[#ff5a1f]" : "group/item flex h-10 w-10 shrink-0 items-center justify-start gap-0 overflow-hidden whitespace-nowrap rounded-xl p-0 text-sm text-slate-600 transition-colors hover:text-[#111827] md:w-full md:hover:group-hover/sidebar:bg-[#ffe7d5]"}>
+        <span className={variant === "topbar" ? "flex h-9 w-9 shrink-0 items-center justify-center" : "flex h-10 w-10 shrink-0 items-center justify-center md:w-16"}>
+          <span className={variant === "topbar" ? "flex h-9 w-9 items-center justify-center rounded-full transition-colors group-hover/item:bg-[#ffe7d5]" : "flex h-9 w-9 items-center justify-center rounded-xl transition-colors group-hover/item:bg-[#ffe7d5] md:group-hover/sidebar:bg-transparent"}>
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" /><path d="M14 16l4-4-4-4M18 12H9" />
             </svg>

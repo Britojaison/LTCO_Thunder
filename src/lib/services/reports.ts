@@ -28,12 +28,26 @@ export type ReportData = {
 
 const one = <T,>(v: T | T[] | null | undefined): T | undefined => (Array.isArray(v) ? v[0] : v ?? undefined);
 
-export async function loadReportData(db: Db, workspaceId: string, campaignId: string, urlSeconds = 3600): Promise<ReportData> {
+export async function loadReportData(
+  db: Db,
+  workspaceId: string,
+  campaignId: string,
+  urlSeconds = 3600,
+  options?: { includeDeletedCampaign?: boolean },
+): Promise<ReportData> {
   if (!z.uuid().safeParse(campaignId).success) throw new ServiceError("Campaign not found", "not_found");
+  let campQuery = db
+    .from("campaigns_thunder")
+    .select("id, name, start_date, end_date, brand:brands_thunder(name, logo_path)")
+    .eq("workspace_id", workspaceId)
+    .eq("id", campaignId);
+  if (!options?.includeDeletedCampaign) {
+    campQuery = campQuery.is("deleted_at", null);
+  }
+
   const [ws, camp, deals, metrics] = await Promise.all([
     db.from("workspaces_thunder").select("name, logo_path, brand_colors").eq("id", workspaceId).single(),
-    db.from("campaigns_thunder").select("id, name, start_date, end_date, brand:brands_thunder(name, logo_path)")
-      .eq("workspace_id", workspaceId).eq("id", campaignId).is("deleted_at", null).maybeSingle(),
+    campQuery.maybeSingle(),
     db.from("report_deals_thunder").select("deal_id, influencer_name, influencer_handle, profile_url, followers, city, client_price, deliverables, product")
       .eq("workspace_id", workspaceId).eq("campaign_id", campaignId).order("influencer_name"),
     db.from("report_post_metrics_thunder").select("*").eq("workspace_id", workspaceId).eq("campaign_id", campaignId),

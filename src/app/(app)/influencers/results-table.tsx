@@ -30,7 +30,7 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
   return (
     <div>
       <div data-gsap-enter className="glass-card glass-interactive mb-3 flex flex-wrap items-center gap-2 p-3 text-sm">
-        <span className="px-1 text-zinc-600">{selected.size} selected</span>
+        <span className="px-1 font-medium text-slate-700">{selected.size} selected</span>
         {campaigns.length ? (
           <>
             <select aria-label="Campaign" value={campaignId} onChange={(e) => setCampaignId(e.target.value)} className={`${inputCls} sm:w-auto sm:max-w-80`}>
@@ -51,15 +51,15 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
             </button>
           </>
         ) : (
-          <span className="text-zinc-400">Create a campaign to add influencers to it.</span>
+          <span className="text-slate-500">Create a campaign to add influencers to it.</span>
         )}
         {result.ok && <span className="text-emerald-700">{result.ok}</span>}
         {result.error && <span className="text-red-600">{result.error}</span>}
       </div>
 
       <div className="glass-card overflow-x-auto">
-        <table className="w-full min-w-[52rem] table-fixed text-sm">
-          <thead className="border-b border-white/80 bg-white/45 text-left text-xs font-medium text-slate-500">
+        <table className="w-full min-w-[52rem] table-fixed text-sm text-slate-800">
+          <thead className="border-b border-white/80 bg-white/45 text-left text-xs font-semibold text-slate-700">
             <tr>
               <th className="w-10 px-2 py-3 text-center align-middle">
                 <input type="checkbox" aria-label="Select all" checked={allOn}
@@ -84,8 +84,8 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
                   <div className="flex items-center gap-2.5">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 via-white to-sky-100 text-xs font-bold text-[#5b51c8] ring-1 ring-white shadow-sm">{r.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span>
                     <div className="min-w-0">
-                      <Link href={`/influencers/${r.id}`} className="font-medium hover:underline">{r.name}</Link>
-                      <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-500">
+                      <Link href={`/influencers/${r.id}`} className="font-semibold text-slate-900 hover:underline">{r.name}</Link>
+                      <div className="flex flex-wrap items-center gap-1 text-xs text-slate-500">
                         @{r.handle}
                         {r.worked_before && <Badge tone="green"><svg className="mr-1 h-3 w-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8 3.2 3.2L13 4.8" /></svg>Worked with us</Badge>}
                         {r.is_blacklisted && <Badge tone="red">Blacklisted</Badge>}
@@ -93,12 +93,12 @@ export function ResultsTable({ rows, campaigns, rateFormat }: { rows: SearchRow[
                     </div>
                   </div>
                 </td>
-                <td className="p-2 text-zinc-600">{[r.city, r.state].filter(Boolean).map(cap).join(", ") || "–"}</td>
-                <td className="p-2 text-zinc-600">{r.niche_tags.slice(0, 3).map(cap).join(", ") || "–"}</td>
-                <td className={metricCell}>{compact(r.followers)}</td>
-                <td className={metricCell}>{pct(r.engagement_rate)}</td>
-                <td className={metricCell}>{compact(r.avg_reel_views)}</td>
-                <td className={metricCell}>{inr(rateOf(r))}</td>
+                <td className="p-2 text-slate-700">{[r.city, r.state].filter(Boolean).map(cap).join(", ") || "–"}</td>
+                <td className="p-2 text-slate-700">{r.niche_tags.slice(0, 3).map(cap).join(", ") || "–"}</td>
+                <td className={`${metricCell} text-slate-800`}>{compact(r.followers)}</td>
+                <td className={`${metricCell} text-slate-800`}>{pct(r.engagement_rate)}</td>
+                <td className={`${metricCell} text-slate-800`}>{compact(r.avg_reel_views)}</td>
+                <td className={`${metricCell} text-slate-800`}>{inr(rateOf(r))}</td>
               </tr>
             ))}
           </tbody>

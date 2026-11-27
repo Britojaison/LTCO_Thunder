@@ -45,7 +45,7 @@ export function CheckboxFilter({ label, name, options, defaultSelected }: Checkb
 
   return (
     <fieldset ref={fieldsetRef} className="relative min-w-0">
-      <legend id={`${id}-label`} className="text-xs font-medium text-zinc-600">{label}</legend>
+      <legend id={`${id}-label`} className="text-xs font-medium text-slate-600">{label}</legend>
       <button
         ref={triggerRef}
         type="button"
@@ -75,7 +75,7 @@ export function CheckboxFilter({ label, name, options, defaultSelected }: Checkb
       <div
         id={`${id}-options`}
         hidden={!open}
-        className="absolute inset-x-0 top-full z-30 mt-1.5 rounded-xl border border-slate-200/80 bg-white/95 p-2.5 shadow-lg backdrop-blur-xl"
+        className="absolute mt-1 w-full rounded-xl border border-slate-200/80 bg-white/95 p-3 text-xs text-slate-700 shadow-lg backdrop-blur-xl z-30"
       >
         <div className="grid grid-cols-2 gap-2">
           {options.map((value) => (
