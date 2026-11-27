@@ -1,11 +1,15 @@
 import type { ComponentProps, ReactNode } from "react";
 
-export const inputCls =
-  "min-w-0 w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none transition focus:border-[#ff6b2b] focus:ring-2 focus:ring-orange-100 disabled:bg-zinc-100";
+const inputBase =
+  "min-w-0 w-full rounded-xl border border-white/90 bg-white/70 px-3 text-sm text-zinc-800 shadow-inner placeholder:text-zinc-400 outline-none backdrop-blur-sm transition focus:border-violet-300 focus:ring-2 focus:ring-violet-100 disabled:bg-zinc-100/70";
+export const inputCls = `${inputBase} py-2`;
+export const compactInputCls = `${inputBase} h-9 py-1.5`;
+export const filterSelectCls =
+  "h-10 min-w-0 w-full rounded-xl border border-white/80 bg-white/75 px-3.5 text-sm text-slate-700 outline-none transition-colors hover:bg-white/90 focus:border-violet-300 focus:ring-2 focus:ring-violet-100";
 export const btnPrimary =
-  "inline-flex items-center justify-center rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#ea650d] hover:shadow-md disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl bg-[#ff5a1f] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#e64a13] hover:shadow-md disabled:opacity-50";
 export const btnSecondary =
-  "inline-flex items-center justify-center rounded-xl border border-[#e5e7eb] bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-white/80 bg-white/65 px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-white/90 disabled:opacity-50";
 export const btnDanger =
   "inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50";
 
@@ -21,7 +25,7 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 
 export function Card({ title, actions, children, className = "" }: { title?: string; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border border-[#eceef2] bg-white p-5 shadow-[0_2px_12px_rgba(24,25,28,0.035)] ${className}`}>
+    <section className={`glass-card p-5 ${className}`}>
       {(title || actions) && (
         <div className="mb-3 flex items-center justify-between gap-2">
           {title && <h2 className="text-sm font-semibold text-zinc-800">{title}</h2>}

@@ -8,8 +8,8 @@ export const metadata = { title: "Join workspace" };
 
 export default function InvitePage({ params }: PageProps<"/invite/[token]">) {
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <main className="bg-thunder-mesh flex flex-1 items-center justify-center p-6">
+      <div className="glass-card w-full max-w-sm p-6">
         <Suspense fallback={<p className="text-sm text-zinc-400">Loading invite…</p>}><Invite params={params} /></Suspense>
       </div>
     </main>

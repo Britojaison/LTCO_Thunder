@@ -11,6 +11,7 @@ import { listDueSnapshots } from "@/lib/services/posts";
 import { DueSnapshots } from "@/components/due-snapshots";
 import { inr } from "@/lib/format";
 import { AnimatedDropdown } from "@/components/animated-dropdown";
+import { GlassEntrance } from "../glass-entrance";
 
 export const metadata = { title: "Campaigns" };
 
@@ -22,17 +23,19 @@ const SECTIONS: [CampaignStatus, string][] = [["live", "Live"], ["planning", "Pl
 export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">) {
   return (
     <section className="space-y-4">
-      <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-        <div className="min-w-0 self-start sm:self-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f97316]">Campaign management</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#111827]">Campaigns</h1>
-          <p className="mt-1 text-sm text-[#6b7280]">Track your creator partnerships and campaign performance.</p>
+      <GlassEntrance>
+        <div data-gsap-enter className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="min-w-0 self-start sm:self-auto">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#f97316]">Campaign management</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#111827]">Campaigns</h1>
+            <p className="mt-1 text-sm text-[#6b7280]">Track your creator partnerships and campaign performance.</p>
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <Link href="/import" className={headerButton}>Import</Link>
+            <Link href="/campaigns/new" className={headerButton}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>New campaign</Link>
+          </div>
         </div>
-        <div className="ml-auto flex shrink-0 items-center gap-3">
-          <Link href="/import" className={headerButton}>Import</Link>
-          <Link href="/campaigns/new" className={headerButton}><span aria-hidden="true" className="mr-2 text-lg leading-none">+</span>New campaign</Link>
-        </div>
-      </div>
+      </GlassEntrance>
       <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}><List searchParams={searchParams} /></Suspense>
     </section>
   );
@@ -92,7 +95,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
           <AnimatedDropdown label={`POC: ${pocTabs.find(([key]) => key === poc)?.[1] ?? "Everyone"}`} ariaLabel="Filter by point of contact">
             {pocTabs.map(([key, label]) => <Link key={key || "all"} href={qs({ poc: key })} role="menuitem" data-menu-item className={`block rounded-lg px-3 py-2 text-xs ${key === poc ? "bg-orange-50 font-semibold text-orange-700" : "text-slate-600 hover:bg-slate-50"}`}>{label}</Link>)}
           </AnimatedDropdown>
-          <nav aria-label="Campaign view" className="flex rounded-full border border-[#e5e7eb] bg-white p-1 text-xs shadow-sm">
+          <nav aria-label="Campaign view" className="flex rounded-full border border-white/80 bg-white/65 p-1 text-xs shadow-sm backdrop-blur-lg">
             <Link href={qs({ view: "" })} aria-current={view === "cards" ? "page" : undefined} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${view === "cards" ? "bg-[#f97316] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}>
               <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z" /></svg>Cards
             </Link>
@@ -105,7 +108,7 @@ async function List({ searchParams }: { searchParams: PageProps<"/campaigns">["s
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map(([label, value, note], index) => (
-          <div key={label} className={index === 0 ? "rounded-2xl bg-gradient-to-br from-[#f97316] to-[#fb923c] px-4 py-3 text-white shadow-[0_8px_20px_rgba(249,115,22,0.16)]" : "rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]"}>
+          <div key={label} className={index === 0 ? "rounded-2xl bg-gradient-to-br from-[#f97316] to-[#fb923c] px-4 py-3 text-white shadow-[0_8px_20px_rgba(249,115,22,0.16)]" : "glass-card px-4 py-3"}>
             <dt className={index === 0 ? "text-xs text-white/80" : "text-xs text-zinc-500"}>{label}</dt>
             <dd className="mt-0.5 text-xl font-semibold tabular-nums">{value}</dd>
             {note && <p className={index === 0 ? "text-[11px] text-white/75" : "text-[11px] text-amber-700"}>{note}</p>}

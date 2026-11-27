@@ -8,8 +8,8 @@ export const metadata = { title: "Creator registration", robots: { index: false 
 
 export default function RegisterPage({ params }: PageProps<"/register/[token]">) {
   return (
-    <main className="flex flex-1 justify-center p-4 sm:p-8">
-      <div className="w-full max-w-xl rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <main className="bg-thunder-mesh flex flex-1 justify-center p-4 sm:p-8">
+      <div className="glass-card w-full max-w-xl p-6">
         <Suspense fallback={<p className="text-sm text-zinc-400">Loading…</p>}>
           <Form params={params} />
         </Suspense>

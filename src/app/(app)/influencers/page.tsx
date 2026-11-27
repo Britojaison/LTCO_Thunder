@@ -13,6 +13,7 @@ import { FilterPanel } from "./filter-panel";
 import { ResultsTable } from "./results-table";
 import { SaveSearchForm } from "./save-search-form";
 import { deleteSavedSearchAction } from "./actions";
+import { GlassEntrance } from "../glass-entrance";
 
 export const metadata = { title: "Influencers" };
 
@@ -51,8 +52,8 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <GlassEntrance className="space-y-4">
+      <div data-gsap-enter className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ff5a1f]">Creator network</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight text-[#18191c]">Influencers</h1>
@@ -82,8 +83,8 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-        <aside className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <aside data-gsap-enter className="min-w-0 space-y-4">
           <Card title="Filters" actions={<span className="flex items-center gap-2 text-zinc-400" aria-hidden="true"><svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-6.5 7.5V19l-3 1v-7.5L4 5Z" /></svg><span className="text-xs">⌃</span></span>}><FilterPanel filters={filters} vocab={vocab} sort={sort} /></Card>
           <Card title="Saved searches">
             {saved.length === 0 && <p className="mb-2 text-xs text-zinc-400">None yet.</p>}
@@ -102,13 +103,14 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
           </Card>
         </aside>
 
-        <div className="min-w-0 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div className="min-w-0 space-y-3">
+          <div data-gsap-enter className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <p className="text-zinc-600">{total.toLocaleString("en-IN")} {total === 1 ? "match" : "matches"}</p>
             <div className="flex flex-wrap gap-1">
               {SORTS.map((s) => (
                 <Link key={s} href={link({ sort: s })}
-                  className={`rounded-full px-3 py-1.5 text-xs ${s === sort ? "bg-[#ff5a1f] text-white" : "text-zinc-600 hover:bg-white"}`}>
+                  aria-current={s === sort ? "true" : undefined}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${s === sort ? "bg-[#ff5a1f] text-white shadow-sm hover:bg-[#e64a13]" : "text-zinc-600 hover:bg-white/80 hover:shadow-sm"}`}>
                   {SORT_LABELS[s]}
                 </Link>
               ))}
@@ -135,6 +137,6 @@ async function SearchView({ searchParams }: { searchParams: PageProps<"/influenc
           )}
         </div>
       </div>
-    </>
+    </GlassEntrance>
   );
 }

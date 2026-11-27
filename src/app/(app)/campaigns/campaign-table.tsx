@@ -13,7 +13,7 @@ export function CampaignTable({ campaigns, showBrand = true }: { campaigns: Row[
   );
   const pct = total.client > 0 ? `${((total.profit / total.client) * 100).toFixed(1)}%` : "–";
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
+    <div className="glass-card overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="border-b border-[#e5e7eb] bg-[#f8f9fb] text-left text-xs text-slate-500">
           <tr>

@@ -8,7 +8,7 @@ export function BriefSearchForm({ initial, enabled }: { initial?: string; enable
   const [state, action, pending] = useActionState<FormState, FormData>(briefSearchAction, {});
   const value = (state.values?.brief as string | undefined) ?? initial ?? "";
   return (
-    <form action={action} className="flex w-full flex-col gap-2 sm:flex-row" key={value}>
+    <form action={action} data-gsap-enter className="glass-card glass-interactive flex flex-col gap-2 p-2.5 sm:flex-row sm:flex-wrap" key={value}>
       <input
         name="brief"
         defaultValue={value}

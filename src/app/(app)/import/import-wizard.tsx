@@ -578,7 +578,7 @@ export function ImportWizard({
       )}
 
       {/* Multi-step Progress Stepper */}
-      <div className="rounded-2xl border border-[#eceef2] bg-white p-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
+      <div className="glass-card p-3">
         <ol className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           {STEPS.map((s) => {
             const active = step === s.num;
@@ -1044,7 +1044,7 @@ export function ImportWizard({
               ["Invalid", summary.invalidCount, "text-red-600"],
               ["Ready", summary.readyToImportCount, "text-[#f97316]"],
             ].map(([label, val, cls]) => (
-              <div key={String(label)} className="rounded-2xl border border-[#eceef2] bg-white p-3 shadow-[0_2px_12px_rgba(24,25,28,0.035)]">
+              <div key={String(label)} className="glass-card p-3">
                 <div className="text-xs text-zinc-500">{label}</div>
                 <div className={`mt-1 text-xl font-semibold tabular-nums ${cls}`}>{val}</div>
               </div>

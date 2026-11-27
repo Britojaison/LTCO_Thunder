@@ -35,7 +35,7 @@ export function BrandingForm({ name, color, logoUrl, presets }: { name: string; 
         </div>
         <div>
           <p className="mb-1 text-xs text-zinc-500">Report cover preview</p>
-          <div className="aspect-[1/1.414] rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+          <div className="paper-preview aspect-[1/1.414] rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
             {preview
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={preview} alt="" className="h-8 max-w-[60%] object-contain" />

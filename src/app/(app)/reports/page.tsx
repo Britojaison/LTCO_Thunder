@@ -22,7 +22,7 @@ async function List() {
   const reports = await listReports(db, workspace.id);
   if (!reports.length) return <Card><p className="text-sm text-zinc-600">No reports yet.</p></Card>;
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+    <div className="glass-card overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs text-zinc-500">
           <tr><th className="p-2">Report</th><th className="p-2">Brand · campaign</th><th className="p-2">Created</th><th className="p-2" /></tr>

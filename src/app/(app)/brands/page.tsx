@@ -30,7 +30,7 @@ async function BrandList() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {brands.map((b) => (
-        <Link key={b.id} href={`/brands/${b.id}`} className="flex items-center gap-3 rounded-2xl border border-[#eceef2] bg-white p-4 shadow-[0_2px_12px_rgba(24,25,28,0.035)] transition hover:border-orange-200 hover:shadow-md">
+        <Link key={b.id} href={`/brands/${b.id}`} className="glass-card glass-interactive flex items-center gap-3 p-4">
           {b.logo_path && logos[b.logo_path] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logos[b.logo_path]} alt="" className="h-12 w-12 rounded-md object-contain" />
